@@ -1,0 +1,19 @@
+<tr>
+<td valign='top' width='1%'>%NUMBER%. </td>
+<td valign='top' width='10%' style='font-size:8pt;'><a href='#film:%FILMID%:1:0'><img width='60px' src='%FILM_POSTER%' border='0'></a><br><a id='_catpostlink%FILMID%' title='Список отложенных фильмов находится в меню Фильмы' href='javascript:SaveFilm(%FILMID%)'>В закладки</a></td>
+<td valign='top' width='*' style='font-size:8pt;'>
+<div style='float:right; width:60px; font-size:8pt;'>
+<img title='Рейтинг IMDb.com' width='16' height='16' src='images/imdb.gif' style='position:relative;top:3px'> %IMDBRATING% <br>
+<img title='Локальный рейтинг среди пользователей' width='16' height='16' src='images/users.gif' style='position:relative;top:3px'> %LOCALRATING% <span style='font-size:8pt;color:gray'>%COUNTLOCALRATING%</span><br>
+<img title='Ваша оценка' width='16' height='16' src='images/user_16.png' style='position:relative;top:3px'> %PERSONALRATING%<br>
+%COMMENTSBEGIN% <a href='#film:%FILMID%:1:1'><img title='Количество отзывов' border='0' width='16' height='16' src='images/contact_16.gif' style='position:relative;top:3px'> %COMMENTSCOUNT% </a>%COMMENTSEND%
+</div>
+<a href='#film:%FILMID%:1:0' style='font-size:1.3em;font-weight:bold;'>%FILMNAME%</a> %HIDE% %POPULAR%
+<p style='margin:1px;'><a href='#film:%FILMID%:1:0' style='color:gray'>%ORIGINALFILMNAME% (%YEAR%)</a></p>
+<p style='margin:1px; margin-top:5px;'>Жанр: %GENRES%</p>
+<p style='margin:1px; margin-top:5px;'>Страна: %COUNTRIES%</p>
+%DIRECTORBEGIN%<p style='margin:1px; margin-top:5px;' >Режиссер: %DIRECTOR% </p>%DIRECTOREND%
+%ACTORSBEGIN%<p style='margin:1px;'>В ролях: %ACTORS% </p>%ACTORSEND%
+</td>
+</tr><tr><td colspan='3'><img src='images/hr.gif' width='327' height='1'></td>
+</tr>

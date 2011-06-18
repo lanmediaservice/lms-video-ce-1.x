@@ -1,0 +1,206 @@
+<!--    
+   Copyright (c) 2005, Brad Neuberg, bkn3@columbia.edu
+   http://codinginparadise.org
+   
+   Permission is hereby granted, free of charge, to any person obtaining 
+   a copy of this software and associated documentation files (the "Software"), 
+   to deal in the Software without restriction, including without limitation 
+   the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+   and/or sell copies of the Software, and to permit persons to whom the 
+   Software is furnished to do so, subject to the following conditions:
+   
+   The above copyright notice and this permission notice shall be 
+   included in all copies or substantial portions of the Software.
+   
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT 
+   OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR 
+   THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
+
+<head>
+      <script type="text/javascript"
+              src="dhtmlHistory.js"></script>
+              
+      <script language="JavaScript">
+         function initialize() {
+            debugMsg("initialize");
+            if (historyStorage.hasKey("pageLoaded") == false) {
+               debugMsg("Setting variables");
+               
+               debugMsg('historyStorage.put("pageLoaded", true)');
+               debugMsg('historyStorage.put("message", "Hello World")');
+               debugMsg('historyStorage.put("field", "Watson, come quick!")');
+               debugMsg('Putting complex object into historyStorage');
+               
+               historyStorage.put("removeMe1", 
+                                  "remove me 1");
+               historyStorage.put("pageLoaded", 
+                                  true);
+               historyStorage.put("message", 
+                                  "Hello World");
+               historyStorage.put("removeMe2", 
+                                  "remove me 2");
+               historyStorage.put("field", 
+                                  "Watson, come "
+                                  + "quick!");
+               historyStorage.put("removeMe3", 
+                                  "remove me 3");
+                                  
+               var complexObject = new Object();
+               complexObject.value1 = 
+                                 "This is value1";
+               complexObject.value2 = 
+                                 "This is value2";
+               complexObject.value3 = new Array();
+               complexObject.value3[0] = 
+                                 "This is array[0]";
+               complexObject.value3[1] = 
+                                 "This is array[1]";
+               
+               historyStorage.put("complexObject",
+                                  complexObject);  
+         
+               loadTopSubscriptions();
+            } 
+            
+            debugMsg("Removing removeMe keys");
+            historyStorage.remove("removeMe1");
+            historyStorage.remove("removeMe2");
+            historyStorage.remove("removeMe3");
+            
+            if (historyStorage.hasKey("removeMe1") != false
+                && historyStorage.hasKey("removeMe2") != false
+                && historyStorage.hasKey("removeMe3") != false) {
+               debugMsg("Removal failed -- bug in framework");
+            }
+            else {
+               debugMsg("Removal succeeded");
+            }
+            
+            debugMsg("hasKey(message)="+historyStorage.hasKey("message"));
+            debugMsg("hasKey(field)="+historyStorage.hasKey("field"));
+            debugMsg("hasKey(bad)="+historyStorage.hasKey("bad"));
+         
+            var pageLoaded = 
+               historyStorage.get("pageLoaded");
+            var message = 
+               historyStorage.get("message");
+            var field = 
+               historyStorage.get("field");
+            var mySubscriptions = 
+               historyStorage.get(
+                              "mySubscriptions");
+            var complexObject = 
+               historyStorage.get(
+                              "complexObject");
+                              
+            debugMsg("complexObject.value1="+complexObject.value1);
+            debugMsg("complexObject.value2="+complexObject.value2);
+            debugMsg("complexObject.value3[0]="+complexObject.value3[0]);
+            debugMsg("complexObject.value3[1]="+complexObject.value3[1]);
+                        
+            var bad = historyStorage.get("bad");
+            
+            debugMsg("getting key 'pageLoaded'="+pageLoaded);
+            debugMsg("getting key 'message'="+message);
+            debugMsg("getting key 'field'="+field);
+            debugMsg("getting bad key 'bad', should be null="+bad);      
+            
+            if (mySubscriptions != null) {            
+               debugMsg("</p>getting key 'mySubscriptions'=</p>"+prettyPrintXml(mySubscriptions));
+            }           
+         } 
+         
+         function debugMsg(msg) {
+            var debugMsg = 
+              document.getElementById("debugMsg");
+            debugMsg.innerHTML += msg + "<br>";
+         }
+         
+         /** Gets the top 100 blog subscriptions
+             as an OPML outline. */
+         function loadTopSubscriptions() {
+            debugMsg("Loading top subscriptions...");
+            var url = "top100.opml";
+            var request = getXmlHttpRequest();
+            var processRequest = function() {
+               if (request.readyState == 4) {
+                  if (request.status == 200) {
+                     historyStorage.put(
+                        "mySubscriptions", 
+                        request.responseText);
+                     debugMsg("Top subscriptions loaded");
+                     debugMsg('Put complex XML document into key "mySubscriptions"');
+                  }
+                  else {
+                     var message = 
+                          "There was a problem "
+                        + "retrieving the "
+                        + "subscription list: "
+                        + request.statusText
+                     historyStorage.put(
+                        "mySubscriptions",
+                        message);
+                     debugMsg(message); 
+                  }
+                  
+                  // print out the results
+                  var mySubscriptions = 
+                        historyStorage.get(
+                              "mySubscriptions");
+                  debugMsg("</p>getting key 'mySubscriptions'=</p>"+prettyPrintXml(mySubscriptions)); 
+               }
+            };
+            
+            request.onreadystatechange = 
+                                 processRequest;
+            request.open("GET", url, true);
+            request.send("");       
+         }
+         
+         function getXmlHttpRequest() {
+            if (window.XMLHttpRequest) {
+                return new XMLHttpRequest();
+            } else if (window.ActiveXObject) {
+                return new ActiveXObject("Microsoft.XMLHTTP");
+            }
+         }
+         
+         /** Converts pointy brackets into their
+             HTML escape code equivalents so
+             we can print out XML. */
+         function prettyPrintXml(content) {
+            if (content == null)
+               return null;
+            content = content.replace(/</g, "&lt;");
+            content = content.replace(/>/g, "&gt;<br>");
+            return content;
+         }
+      </script>
+   </head>
+   
+   <body onload="initialize()">
+      <h1>Test History Storage</h1>
+      
+      <h2>About this Browser</h2>
+      <div>
+         <!-- Print out browser details for QA -->
+         <script language="JavaScript">
+            document.write("navigator.appCodeName: " + navigator.appCodeName + "<br>");
+            document.write("navigator.appName: " + navigator.appCodeName + "<br>");
+            document.write("navigator.appVersion: " + navigator.appVersion + "<br>");
+            document.write("navigator.userAgent: " + navigator.userAgent + "<br>");
+            document.write("navigator.platform: " + navigator.platform + "<br>");
+         </script>
+      </div>
+      
+      <h2>Test Output</h2>
+      <div id="debugMsg"><p>
+         <b>Debug Output:</b></p>
+      </div>
+   </body>
+</html>
