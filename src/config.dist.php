@@ -48,7 +48,7 @@ $config['customer']['pass'] = "demo";
 $config['customer']['updateservice'] = "http://update.lanmediaservice.com/actions.php";
 $config['customer']['parser_service'] = 'http://service.lanmediaservice.com/2/actions.php';
 $config['customer']['products']['lms_platform'] = "./"; //путь к файлам общих скриптов (если идут в комплекте)
-$config['customer']['products']['lms_video_zend'] = "./"; //путь к файлам скрипта видео-каталога
+$config['customer']['products']['lms_video'] = "./"; //путь к файлам скрипта видео-каталога
 
 //Учетные данные mysql
 $config['mysqlhost'] = "localhost";
