@@ -130,7 +130,7 @@ class SiteParser {
         return $httpClient;
     }
     
-    function getStructByUrl($url, $module, $context, $acceptedAttaches = array())
+    function getStructByUrl($url, $module, $context, $acceptedAttaches = array(), $followRidrects = false)
     {
         $res = false;
         $request = array(
@@ -145,7 +145,7 @@ class SiteParser {
             $res = $result['response'];
         } elseif (in_array($result['response'], array(404,500))) {
             $httpClient = $this->getHttpRetriever($url);
-            $response = $httpClient->get($url, true, '', true, true);
+            $response = $httpClient->get($url, $followRidrects, '', true, true);
             $request['action'] = 'parseResponse';
             $request['response'] = $response;
             $result = $this->execServiceAction($request);

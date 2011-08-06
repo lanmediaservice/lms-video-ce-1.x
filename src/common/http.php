@@ -526,6 +526,15 @@
                 while (!feof( $this->_socket )) {
                     $response .= fread( $this->_socket, 4096 );
                 }
+                if (preg_match('{^HTTP/\d\.\d\s+(\d+)}i', $response, $matches )) {
+                    $status = $matches[1];
+                    if ( $follow_redirects && ($status == HTTP_STATUS_MOVED_PERMANENTLY || $status == HTTP_STATUS_FOUND || $status == HTTP_STATUS_SEE_OTHER ) ) {
+                        if (preg_match('{' . HTTP_CRLF . 'Location:(.*?)' . HTTP_CRLF . '}i', $response, $matches )) {
+                            $location = trim($matches[1]);
+                            return $this->get($location, $follow_redirects, $uri, $returnRawResponse, $gzipEnable);
+                        }
+                    }
+                }
                 return $response;
             } else {
                 $this->_get_response();

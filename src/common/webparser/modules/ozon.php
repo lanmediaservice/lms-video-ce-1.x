@@ -59,7 +59,7 @@ class SiteParser_ozon extends SiteParser{
                 $dirPath = dirname($path);
                 $url = $this->absUrl($path, $dirPath);
                 $fullCastPath = preg_match("/\?type=1/i", $url)? $url : $url . '?type=1';
-                $res = $this->getStructByUrl($fullCastPath, 'ozon', $what);
+                $res = $this->getStructByUrl($fullCastPath, 'ozon', $what, array(), true);
             break;
             case "person":
                 $dirPath = dirname($path);
