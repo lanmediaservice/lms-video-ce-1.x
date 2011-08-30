@@ -15,8 +15,8 @@ class SiteParser_worldart extends SiteParser{
         switch($action){
             case 'search':
                 $url = array();
-                $urls[] = "/search.php?sector=cinema&name=".urlencode($params['name']);
-                $urls[] = "/search.php?sector=animation&name=".urlencode($params['name']);
+                $urls[] = "/search.php?global_sector=cinema&public_search=".urlencode($params['name']);
+                $urls[] = "/search.php?global_sector=animation&public_search=".urlencode($params['name']);
                 return $urls;
                 break;
         } // switch
