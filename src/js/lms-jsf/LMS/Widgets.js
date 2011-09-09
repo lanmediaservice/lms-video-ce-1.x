@@ -45,3 +45,12 @@ LMS.Widgets._getNewDOMId = function(){
 }
 
 LMS.Widgets.IS_STRING = 1;
+
+LMS.Widgets.thisWidget = function(elementOrEvent){
+    //TODO: implement
+    if (elementOrEvent instanceof Event) {
+        var element = elementOrEvent.target || elementOrEvent.srcElement;
+    } else {
+        var element = elementOrEvent;
+    }
+}

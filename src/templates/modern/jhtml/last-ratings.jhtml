@@ -1,0 +1,19 @@
+<div class="title">
+    <a onclick="window.action.getLastRatings();" title="Обновить" class="icon refresh"></a>
+    Последние оценки
+</div>
+<div class="inside-body">
+    <table><tbody>
+    {for film in films}
+        {if film.film_id}
+            <tr>
+                <td>${parseInt(film_index)+1}.</td>
+                <td>
+                    <a href="#/movie/id/${film.film_id}">${film.name|escape}</a>
+                </td>
+                <td class="rating">${film.rating}</td>
+            </tr>
+        {/if}
+    {/for} 
+    </tbody></table>
+</div>

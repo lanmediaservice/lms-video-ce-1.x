@@ -25,49 +25,37 @@ LMS.Widgets.PageIndexBox = Class.create(LMS.Widgets.Generic, {
     currentPage: 0,
     offset: 0,
     sufficses: {3:'K', 6: 'M', 9: 'G'},
-    prevPageText: "<span>&larr;</span>",
-    nextPageText: "<span>&rarr;</span>",
+    prevPageText: "&larr;",
+    nextPageText: "&rarr;",
     beforePagesText: "",
     dotText: ".",
+    className: 'paginator',
     onCreateElement: function() 
     {
         JSAN.require('LMS.Widgets.Factory');
         var pagesCount = this.pageSize ? Math.ceil(this.count/this.pageSize) : 0;
         this.currentPage = Math.ceil((this.offset+1)/this.pageSize);
         var wrapper = LMS.Widgets.Factory('LayerBox');
-        wrapper.setDOMId(this.DOMId);
-        wrapper.setClassName('paginator');
+        var ul = LMS.Widgets.Factory('UnorderedListBox');
         if (pagesCount>1){
+            wrapper.addHTML(this.beforePagesText);
 
+            var li = LMS.Widgets.Factory('ListItemBox');
+            li.setClassName('prev');
+            var prevPageElement = LMS.Widgets.Factory('AnchorBox');
             if (this.currentPage>1) {
-                var prevPageElement = LMS.Widgets.Factory('AnchorBox');
                 var pageNumber = this.currentPage - 1;
                 var newOffset = (pageNumber-1) * this.pageSize;
                 prevPageElement.setTitle(pageNumber);
-                prevPageElement.setHref('javascript:void(0)');
                 prevPageElement.setValue(newOffset);
                 LMS.Connector.connect(prevPageElement, 'action', this, 'setOffset');
-                prevPageElement.addHTML(this.prevPageText);
             } else {
-                var prevPageElement = LMS.Widgets.Factory('TextBox');
-                prevPageElement.setValue(this.prevPageText);
+                prevPageElement.setHref(null);
+                li.addClassName('disabled');
             }
-            prevPageElement.setClassName('arrow');
-             
-            if (this.currentPage<pagesCount) {
-                var nextPageElement = LMS.Widgets.Factory('AnchorBox');
-                var pageNumber = this.currentPage + 1;
-                var newOffset = (pageNumber-1) * this.pageSize;
-                nextPageElement.setTitle(pageNumber);
-                nextPageElement.setHref('javascript:void(0)');
-                nextPageElement.setValue(newOffset);
-                LMS.Connector.connect(nextPageElement, 'action', this, 'setOffset');
-                nextPageElement.addHTML(this.nextPageText);
-            } else {
-                var nextPageElement = LMS.Widgets.Factory('TextBox');
-                nextPageElement.setValue(this.nextPageText);
-            }
-            nextPageElement.setClassName('arrow');
+            prevPageElement.addHTML(this.prevPageText);
+            li.addWidget(prevPageElement);
+            ul.addWidget(li);
 
             var points = [];
             var step = Math.pow(10, Math.floor(this.logB(pagesCount, 10)));
@@ -90,9 +78,14 @@ LMS.Widgets.PageIndexBox = Class.create(LMS.Widgets.Generic, {
                     }
                 }
             }
+            for (var i=this.currentPage-5; i<=(this.currentPage+5); i++) {
+                if (i>0 && i<=pagesCount) {
+                    points.push(i);
+                }
+            }
             if (points.indexOf(1)===-1) points.push(1);
             if (points.indexOf(pagesCount)===-1) points.push(pagesCount);
-            points = points.sort(this._sortNumber).without(0);
+            points = points.sort(this._sortNumber).without(0).uniq();
             var allpoints = [];
             for (var i=0; i<points.length; i++){
                 if (i>0) {
@@ -104,58 +97,79 @@ LMS.Widgets.PageIndexBox = Class.create(LMS.Widgets.Generic, {
                 allpoints.push({'short': false, 'value': points[i]});
             }
 
-            wrapper.addHTML(this.beforePagesText);
-            wrapper.addWidget(prevPageElement);
-            wrapper.addText('\xA0');
-            wrapper.addWidget(nextPageElement);
-            wrapper.addHTML('<BR>');
-
             for (var i=0; i<allpoints.length; i++){
+                var li = LMS.Widgets.Factory('ListItemBox');
+                li.setClassName('default');
                 var pageNumber = allpoints[i].value;
                 if (allpoints[i]['short']) {
+                    li.setClassName('short');
                     var pageText = this.dotText;
                 } else {
-                    var pageText = this.truncateNumber(pageNumber);
+                    var pageText = ' ' + this.truncateNumber(pageNumber) + ' ';
                 }
+                var pageElement = LMS.Widgets.Factory('AnchorBox');
                 if (pageNumber!=this.currentPage) {
                     var newOffset = (pageNumber-1) * this.pageSize;
-                    var pageElement = LMS.Widgets.Factory('AnchorBox');
-                    if (allpoints[i]['short']) {
-                        pageElement.setTitle(pageNumber);
-                        pageElement.setClassName('short');
-                    }
+                    pageElement.setTitle(pageNumber);
                     pageElement.setHTML(pageText);
                     pageElement.setValue(newOffset);
-                    pageElement.setHref('javascript:void(0)');
                     LMS.Connector.connect(pageElement, 'action', this, 'setOffset');
-
-                    wrapper.addWidget(pageElement);
                 } else {
-                    var pageElement = LMS.Widgets.Factory('TextBox');
-                    pageElement.setClassName('current');
-                    pageElement.setValue(pageText);
-                    wrapper.addWidget(pageElement);
+                    li.setClassName('current');
+                    pageElement.setHTML(pageText.strip());
                 }
+                li.addWidget(pageElement);
+                ul.addWidget(li);
             }
 
-
+            var li = LMS.Widgets.Factory('ListItemBox');
+            li.setClassName('next');
+            var nextPageElement = LMS.Widgets.Factory('AnchorBox');
+            if (this.currentPage<pagesCount) {
+                var pageNumber = this.currentPage + 1;
+                var newOffset = (pageNumber-1) * this.pageSize;
+                nextPageElement.setTitle(pageNumber);
+                nextPageElement.setValue(newOffset);
+                LMS.Connector.connect(nextPageElement, 'action', this, 'setOffset');
+            } else {
+                nextPageElement.setHref(null);
+                li.addClassName('disabled');
+            }
+            nextPageElement.addHTML(this.nextPageText);
+            li.addWidget(nextPageElement);
+            ul.addWidget(li);
  
         }
-        return wrapper.createElement();
+
+        wrapper.addWidget(ul);
+
+        this.wrapperElement = wrapper.createElement();
+        
+        this.applyDecorators();
+        
+        return this.wrapperElement;
     },
-    setOffset: function(offset)
+    setOffset: function(offset, allowEmit)
     {
+        if (Object.isUndefined(allowEmit)) {
+            allowEmit = true;
+        }
+        offset = parseInt(offset)
         if (this.offset!=offset) {
             this.offset = offset;
-            this.emit('valueChanged', this.offset);
+            if (allowEmit) {
+                this.emit('valueChanged', this.offset);
+            }
         }
     },
     setCount: function(count)
     {
+        count = parseInt(count)
         this.count = count;
     },
     setPageSize: function(pageSize)
     {
+        pageSize = parseInt(pageSize)
         this.pageSize = pageSize;
     },
     logB: function (x, base) {

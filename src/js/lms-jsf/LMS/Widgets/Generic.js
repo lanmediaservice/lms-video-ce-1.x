@@ -135,6 +135,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
     { 
         this.value = value;
         this.emit('valueChanged', this.value);
+        return this;
     },
     /**
      * Возвращает DOM-идентификатор виджета
@@ -160,6 +161,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
     setDOMId: function(DOMId) 
     { 
         this.DOMId = DOMId;
+        return this;
     },
     /**
      * Возвращает Имя виджета
@@ -183,6 +185,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
     setName: function(name)
     {
         this.name = name;
+        return this;
     },
     /**
      * @memberOf LMS.Widgets.Generic
@@ -307,6 +310,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
         if (this.wrapperElement) { 
             this.wrapperElement.setStyle(styles);
         }
+        return this;
     },
     /**
      * Сохраняет название CSS-класса для главного элемента виджета
@@ -320,9 +324,14 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
     setClassName: function(className) 
     {
         this.className = className;
-        if (this.wrapperElement) { 
-            this.wrapperElement.className = className;
+        if (this.wrapperElement && !Object.isUndefined(this.wrapperElement.className)) {
+            if (this.className) {
+                this.wrapperElement.className = this.className;
+            } else {
+                this.wrapperElement.removeAttribute('className');
+            }
         }
+        return this;
     },
     
     hasClassName: function(className) {
@@ -335,6 +344,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
         if (!this.hasClassName(className)) {
             this.setClassName(this.className + (this.className? ' ' : '') + className); 
         }
+        return this;
     },
     
     removeClassName: function(className) 
@@ -343,6 +353,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
             this.setClassName(this.className.replace(
                 new RegExp("(^|\\s+)" + className + "(\\s+|$)"), ' ').strip()); 
         }
+        return this;
     },
     /**
      * Сохраняет и пытается применить видимость виджета
@@ -360,6 +371,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
         } else {
             this.setStyle(this.onHideStyles);
         }
+        return this;
     },
     /**
      * Возвращает текущее значение видимости виджета
@@ -386,6 +398,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
         if (this.wrapperElement && !Object.isUndefined(this.wrapperElement.disabled)) {
             this.wrapperElement.readOnly = this.readOnly;
         }
+        return this;
     },
     /**
      * Возвращает текущее значение режима read only виджета
@@ -412,6 +425,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
         if (this.wrapperElement && !Object.isUndefined(this.wrapperElement.disabled)) {
             this.wrapperElement.disabled = !this.enabled;
         }
+        return this;
     },
     /**
      * Возвращает включен/отключен ли виджет
@@ -442,6 +456,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
                 this.wrapperElement.removeAttribute('title');
             }
         }
+        return this;
     },
     /**
      * Возвращает текущее значение свойства title
@@ -489,6 +504,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
     setDebugLogger: function(handler)
     {
         this.debugLogger = handler;
+        return this;
     },
     /**
      * Установка внешнего обработчика информации для пользователя
@@ -501,6 +517,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
     setUserMessenger: function(handler)
     {
         this.userMessenger = handler;
+        return this;
     },
     /**
      * Привязка события главного элемента виджета к внешнему обработчику
@@ -521,6 +538,7 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
                 this.wrapperElement.attachEvent("on" + eventName, eventHandler);
             }
         }
+        return this;
     },
      /**
       * Устанавливает значение аттрибута wrapper'а виджета
@@ -544,18 +562,33 @@ LMS.Widgets.Generic = Class.create(LMS.Signalable, {
                  this.wrapperElement.removeAttribute(attribute);
              }
          }
-     },
-     getWrapperElement: function()
-     {
-         return this.wrapperElement;
-     },
-     
-     t: function(string)
-     {
-         JSAN.require('LMS.i18n');
-         return LMS.i18n.translate(string);
-     }
- });
+        return this;
+    },
+    getWrapperElement: function()
+    {
+        return this.wrapperElement;
+    },
+
+    t: function(string)
+    {
+        JSAN.require('LMS.i18n');
+        return LMS.i18n.translate(string);
+    },
+    
+    free: function()
+    {
+        this.onDestroy();
+        return this;
+    },
+    
+    onDestroy: function()
+    {
+        LMS.Connector.disconnectAll(this);
+        if (this.wrapperElement && this.wrapperElement.parentNode) {
+            this.wrapperElement.remove();
+        }
+    }
+});
 
 /** 
  *  Пример для unit-тестирования

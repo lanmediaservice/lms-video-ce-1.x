@@ -1,0 +1,19 @@
+<div class="title">
+    <a onclick="window.action.getLastComments();" title="Обновить" class="icon refresh"></a>
+    Последние отзывы
+</div>
+<div class="inside-body">
+    <table><tbody>
+    {for film in films}
+        {if film.film_id}
+            <tr>
+                <td>${parseInt(film_index)+1}.</td>
+                <td>
+                    {var date = LMS.Date.datetimeStrToDate(film.added_at)}
+                    <a class="comment-tooltip" href="#/movie/id/${film.film_id}/page/comments" title="<strong>${film.user_name|escape}</strong> (${LMS.LiveDatetime.dateToStr(date, 3)}):&lt;br&gt;${window.ui.htmlizeText(film.text)|htmlspecialchars}">${film.name|escape}</a>
+                </td>
+            </tr>
+        {/if}
+    {/for} 
+    </tbody></table>
+</div>

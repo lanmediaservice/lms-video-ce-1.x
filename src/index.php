@@ -17,27 +17,60 @@ session_start();
 require_once isset($config['logon.php']) ? $config['logon.php'] : "logon.php" ;
 $gd_loaded = function_exists('imagecreatefromgif');
 ?>
+<!DOCTYPE html>
 <html>
 <head>
 <title><?php echo isset($config['sitetitle']) ? $config['sitetitle'] : "Видео-каталог"; ?></title>
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/styles.css" ?>">
 <link rel="alternate" type="application/rss+xml" title="Последние поступления" href="rss_films.php" />
-<script language="JavaScript" src="js/prototype-1.6.0.3.js"></script>
+<?php 
+    $lessFile = dirname(__FILE__) . "/templates/{$config['template']}/css/styles.less";
+    if (file_exists($lessFile)): ?>
+        <link rel="stylesheet/less" type="text/css" href="<?php echo "templates/{$config['template']}/css/styles.less?v=" . filemtime($lessFile); ?>">
+        <script language="JavaScript" src="js/less-1.1.3.min.js"></script>
+<?php endif;
+    $favicon = "templates/{$config['template']}/img/favicon.ico";
+    if (file_exists($favicon)): ?>
+        <link rel="shortcut icon" type="image/x-icon" href="<?php echo $favicon; ?>" />
+<?php endif; ?>
+        
+<script language="JavaScript" src="js/prototype-1.7.0.0.js"></script>
+<script language="JavaScript" src="js/jquery-1.6.2.min.js"></script>
+<script>
+    var $j = jQuery.noConflict();
+</script>
 <script language="JavaScript" src="js/scriptaculous/scriptaculous.js"></script>
 <script language="JavaScript" src="js/scriptaculous/effects.js"></script>
 <script language="JavaScript" src="jshttprequest/JsHttpRequest.js"></script>
 <script language="JavaScript" src="common/jhr_controller.js"></script>
-<script language="JavaScript" src="really_simple_history/dhtmlHistory.js"></script>
+<script language="JavaScript" src="js/rsh.js?v=2"></script>
+<script language="JavaScript" src="js/trimpath/template.js"></script>
 <script language="JavaScript" src="klayers.js"></script>
 <script language="JavaScript" src="strings.js"></script>
 <script language="JavaScript" src="dropDownList.js"></script>
 <script language="JavaScript" src="js/lms-jsf/JSAN.js"></script>
+<script language="JavaScript" src="js/lms-jsf/LMS.js"></script>
+<script language="JavaScript" src="js/lms-jsf/LMS/Connector.js"></script>
+<script language="JavaScript" src="js/lms-jsf/LMS/Signalable.js"></script>
+<script language="JavaScript" src="js/lms-jsf/LMS/Widgets.js"></script>
+<script language="JavaScript" src="js/lms-jsf/LMS/Widgets/Factory.js"></script>
 <script>
+    window.dhtmlHistory.create({
+        toJSON: function(o) {
+            return Object.toJSON(o);
+        },
+        fromJSON: function(s) {
+            return s.evalJSON();
+        }
+    }); 
+            
     JSAN.includePath   = ['js/lms-jsf'];
     JSAN.errorLevel = "warn";
     JSAN.require('LMS.Widgets.Factory'); 
     //Константы
+    var USER_GROUP =  <?php echo $user['UserGroup']; ?>;
+    var DEFAULT_FAVICON = "<?php echo $favicon; ?>";
     var SITE_URL = "<?php echo $config['siteurl']; ?>";
     var SITE_TITLE = "<?php echo isset($config['sitetitle']) ? $config['sitetitle'] : "Видео-каталог"; ?>";
 
@@ -271,6 +304,10 @@ $gd_loaded = function_exists('imagecreatefromgif');
         }
         getPreferences();
         getBookmarks();
+        var matches = window.location.hash.match(/#\/movie\/id\/(\d+)/);
+        if (matches) {
+            window.location.hash = 'film:' + matches[1] + ':0:0';
+        }
         initialize();
         preloadImage('images/progbar.gif');
         preloadImage('images/delete_16.gif');
@@ -328,7 +365,6 @@ function handleHistoryChange(newLocation,
     interface using the new location. */
 function updateUI(newLocation,
                   historyData) {
-
     action = newLocation.split(":");
     for (i=0;i<3;i++){
         if (pagesrealcontent[i].length && (pagesrealcontent[i]==newLocation)){
@@ -338,9 +374,6 @@ function updateUI(newLocation,
         }
     }
     switch (action[0]){
-        case '':
-            window.location = "#" + pagescontent[0];
-        break;
         case 'page':
             document.title = pagestitle[i];
             MyPages.select(action[1]);
@@ -354,6 +387,8 @@ function updateUI(newLocation,
             pagesrealcontent[2] = newLocation;
             setCookie ("page2", newLocation);
         break;
+        default: 
+            window.location = "#" + pagescontent[0];
     }
 }
 
@@ -1071,7 +1106,7 @@ function LoadControl(incr){
                         DrawCatalog(offset, letter);
                     }
 
-                    var pageIndexBox = LMS.Widgets.Factory('PageIndexBox');
+                    var pageIndexBox = LMS.Widgets.Factory('PageIndexBoxOld');
                     pageIndexBox.beforePagesText = "Страницы: ";
                     pageIndexBox.prevPageText = "<span class='arrow'>&larr; предыдущая</span>";
                     pageIndexBox.nextPageText = "<span class='arrow'>следующая &rarr;</span>";
@@ -1080,7 +1115,7 @@ function LoadControl(incr){
                     pageIndexBox.setOffset(offset);
                     LMS.Connector.connect(pageIndexBox, 'valueChanged', window, 'selectPage');
 
-                    var pageIndexBox2 = LMS.Widgets.Factory('PageIndexBox');
+                    var pageIndexBox2 = LMS.Widgets.Factory('PageIndexBoxOld');
                     pageIndexBox2.beforePagesText = "Страницы: ";
                     pageIndexBox2.prevPageText = "<span class='arrow'>&larr; предыдущая</span>";
                     pageIndexBox2.nextPageText = "<span class='arrow'>следующая &rarr;</span>";
@@ -1567,7 +1602,10 @@ function LoadControl(incr){
             }
         }
     }
-
+    
+    $j(document).ready(function() {
+        Init();
+    });
 </script>
 <style>
 select.dropDownList
@@ -1586,8 +1624,19 @@ select.dropDownList
 }
 
 </style>
+    <?php 
+        $headFile = dirname(__FILE__) . "/templates/{$config['template']}/head.php";
+        if (file_exists($headFile)) {
+            require_once $headFile;
+        }
+    ?>
 </head>
-<body onLoad="Init()" >
+<!--[if lt IE 7 ]> <body class="ie6"> <![endif]-->
+<!--[if IE 7 ]>    <body class="ie7"> <![endif]-->
+<!--[if IE 8 ]>    <body class="ie8"> <![endif]-->
+<!--[if IE 9 ]>    <body class="ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--> <body> <!--<![endif]-->
+    
 <div id="sysmessagebox" style="margin:0px;padding:5px;border:1px solid silver; background-color:#F5F5C0; width:100%; display:none;">
 <div style='float:right;'><a href='javascript:Hide("sysmessagebox")'>Закрыть</a></div>
 <span id="sysmessage"></span>

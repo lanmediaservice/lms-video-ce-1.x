@@ -1,0 +1,75 @@
+I. Системные требования.
+    ОС: Linux, FreeBSD, Windows
+    Вебсервер: Apache, nginx
+    PHP: 5.3 с поддержкой mbstring, iconv, mcrypt, mysql, hash, session, gd, dom, bcmath, ctype, json, simplexml
+    MySQL: 5.0 и выше
+
+II. Инсталляция.
+    
+a) Автоматизированная
+    1. Создать директорию для скрипта и распаковать содержимое папки video архива. Например, чтобы
+       /home/mysite.com/www/video/[app, index.php...]
+       было доступно как:  http://mysite.com/video/
+    
+    2. Открыть в браузере каталог install/ (например, http://mysite.com/video/install)
+       и провести инсталляцию.
+
+    3. Для большей безопасности убедиться что каталог http://mysite.com/video/app/ не доступен через браузер.
+
+    4. Удалить каталог install/
+
+    5. Сконфигурировать параметры config.php
+
+    6. Войти в http://mysite.com/video/admin.php и зарегистрироваться. Первый зарегистрированный
+       пользователь получает права  администратора 
+    
+    7. Убедится, что скрипт периодического обслуживания индекса поиска, отбора бестселлеров работает:
+        /app/tasks/batch-daily.php
+
+        и добавить его в crontab (Unix):
+        0 5 * * * /path/to/video/app/tasks/batch-daily.php 2>&1 >/dev/null
+
+        или в планировщик Windows (запуск 1 раз в сутки или по желанию):
+        c:\php\php.exe c:\www\video\app\tasks\batch-daily.php
+
+б) Ручная
+    1. Создать директорию для скрипта и распаковать содержимое папки video архива. Например, чтобы
+       /home/mysite.com/www/video/[app, index.php...]
+       было доступно как:  http://mysite.com/video/
+
+    2. Переименовать config.dist.php в config.php прописать параметры доступа к базе MySQL. Внимательно изучить 
+       и настроить другие параметры.
+    3. Переименовать app/local.settings.dist.php в local.settings.php
+
+    4. Создать базу данных MySQL в кодировке cp1251 и запустить в ней SQL-скрипт mysql.sql
+ 
+    5. Для большей безопасности убедиться что каталог http://mysite.com/video/app/ не доступен через браузер.
+
+    6. Удалить каталог install/
+
+    7. Войти в admin.php и зарегистрироваться. Первый зарегистрированный
+       пользователь получает права  администратора 
+    
+    8. Убедится, что скрипт периодического обслуживания индекса поиска, отбора бестселлеров работает:
+        /app/tasks/batch-daily.php
+
+        и добавить его в crontab (Unix):
+        0 5 * * * /path/to/video/app/tasks/batch-daily.php 2>&1 >/dev/null
+
+        или в планировщик Windows (запуск 1 раз в сутки или по желанию):
+        c:\php\php.exe c:\www\video\app\tasks\batch-daily.php
+
+Внимание! После установки скрипта его необходимо обновить (см. вкладку "Сервис" -> "Обновления")
+
+III. Обновление с версии 1.0
+    См. файл UPDATING
+
+IV. Документация
+http://docs.lanmediaservice.com/pages.php?id=lms_video_index
+
+По всем вопросам обращаться:
+WWW:   http://support.lanmediaservice.com/
+Email: support@lanmediaservice.com
+
+© ООО «ЛанМедиаСервис», 2006—2011
+http://www.lanmediaservice.com/

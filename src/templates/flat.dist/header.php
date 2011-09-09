@@ -22,9 +22,6 @@
                 } 
             } 
             switch (action[0]){ 
-                case '': 
-                        window.location = "#" + pagescontent[3]; 
-                break; 
                 case 'page': 
                     document.title = pagestitle[i]; 
                     MyPages.select(action[1]); 
@@ -38,6 +35,8 @@
                     pagesrealcontent[2] = newLocation; 
                     setCookie ("page2", newLocation); 
                 break; 
+                default: 
+                    window.location = "#" + pagescontent[3];
             } 
         } 
     <?php endif; ?>
