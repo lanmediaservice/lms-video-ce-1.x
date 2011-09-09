@@ -1,135 +1,76 @@
---
--- Table structure for table `autouserfilmratings`
---
-
 CREATE TABLE `autouserfilmratings` (
-  `FilmID` int(11) NOT NULL default '0',
-  `UserID` int(11) NOT NULL default '0',
-  `Rating` tinyint(11) NOT NULL default '0',
-  PRIMARY KEY  (`FilmID`,`UserID`)
+  `FilmID` int(11) NOT NULL DEFAULT '0',
+  `UserID` int(11) NOT NULL DEFAULT '0',
+  `Rating` tinyint(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`FilmID`,`UserID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `autouserfilmratings`
---
 
+CREATE TABLE `bestsellers` (
+  `category_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `films` text NOT NULL,
+  `rank` int(11) NOT NULL,
+  PRIMARY KEY (`category_id`)
+) TYPE=MyISAM;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `bookmarks`
---
 
 CREATE TABLE `bookmarks` (
-  `ID` int(11) NOT NULL auto_increment,
-  `UserID` int(11) NOT NULL default '0',
-  `TypeOfEntity` tinyint(4) NOT NULL default '0',
-  `EntityID` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`ID`),
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `UserID` int(11) NOT NULL DEFAULT '0',
+  `TypeOfEntity` tinyint(4) NOT NULL DEFAULT '0',
+  `EntityID` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`),
   UNIQUE KEY `uniq` (`UserID`,`TypeOfEntity`,`EntityID`),
   KEY `UserID` (`UserID`),
   KEY `EntityID` (`EntityID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `bookmarks`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `comments`
---
 
 CREATE TABLE `comments` (
-  `ID` int(11) NOT NULL auto_increment,
-  `FilmID` int(11) NOT NULL default '0',
-  `UserID` int(11) NOT NULL default '0',
-  `ToUserID` int(11) default '0',
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `FilmID` int(11) NOT NULL DEFAULT '0',
+  `UserID` int(11) NOT NULL DEFAULT '0',
+  `ToUserID` int(11) DEFAULT '0',
   `Text` text NOT NULL,
-  `Date` datetime NOT NULL default '0000-00-00 00:00:00',
-  `ip` varchar(15) default NULL,
-  PRIMARY KEY  (`ID`),
+  `Date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `ip` varchar(15) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
   KEY `FilmID` (`FilmID`),
   KEY `UserID` (`UserID`),
   KEY `ToUserID` (`ToUserID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `comments`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `companies`
---
 
 CREATE TABLE `companies` (
-  `ID` int(11) NOT NULL auto_increment,
-  `Name` varchar(100) NOT NULL default '',
-  PRIMARY KEY  (`ID`)
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(100) NOT NULL DEFAULT '',
+  PRIMARY KEY (`ID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `companies`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `counter_archive`
---
 
 CREATE TABLE `counter_archive` (
-  `UserID` int(11) NOT NULL default '0',
-  `UseDate` datetime NOT NULL default '0000-00-00 00:00:00',
-  `Bytes` bigint(20) NOT NULL default '0'
+  `UserID` int(11) NOT NULL DEFAULT '0',
+  `UseDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `Bytes` bigint(20) NOT NULL DEFAULT '0'
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `counter_archive`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `counter_daily`
---
 
 CREATE TABLE `counter_daily` (
-  `UserID` int(11) NOT NULL default '0',
-  `MinOfDay` int(11) NOT NULL default '0',
-  `Bytes` int(11) NOT NULL default '0',
+  `UserID` int(11) NOT NULL DEFAULT '0',
+  `MinOfDay` int(11) NOT NULL DEFAULT '0',
+  `Bytes` int(11) NOT NULL DEFAULT '0',
   UNIQUE KEY `UserID` (`UserID`,`MinOfDay`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `counter_daily`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `countries`
---
 
 CREATE TABLE `countries` (
-  `ID` int(11) NOT NULL auto_increment,
-  `imdbCountry` varchar(100) NOT NULL default '',
-  `Name` varchar(100) NOT NULL default '',
-  PRIMARY KEY  (`ID`),
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `imdbCountry` varchar(100) NOT NULL DEFAULT '',
+  `Name` varchar(100) NOT NULL DEFAULT '',
+  PRIMARY KEY (`ID`),
   UNIQUE KEY `imdbCountry` (`imdbCountry`)
 ) TYPE=MyISAM;
-
---
--- Dumping data for table `countries`
---
 
 INSERT INTO `countries` (`ID`, `imdbCountry`, `Name`) VALUES
 (1, 'France', 'Франция'),
@@ -318,178 +259,115 @@ INSERT INTO `countries` (`ID`, `imdbCountry`, `Name`) VALUES
 (184, 'Zambia', 'Замбия'),
 (185, 'Zimbabwe', 'Зимбабве');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `files`
---
-
 CREATE TABLE `files` (
-  `ID` int(11) NOT NULL auto_increment,
-  `Marked` tinyint(4) NOT NULL default '0',
-  `FilmID` int(11) NOT NULL default '0',
-  `Name` varchar(100) NOT NULL default '',
-  `MD5` varchar(32) NOT NULL default '',
-  `Path` varchar(255) NOT NULL default '',
-  `Size` bigint(20) NOT NULL default '0',
-  `ed2kLink` varchar(255) NOT NULL default '',
-  `dcppLink` varchar(255) NOT NULL default '',
-  PRIMARY KEY  (`ID`),
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Marked` tinyint(4) NOT NULL DEFAULT '0',
+  `FilmID` int(11) NOT NULL DEFAULT '0',
+  `Name` varchar(100) NOT NULL DEFAULT '',
+  `MD5` varchar(32) NOT NULL DEFAULT '',
+  `Path` varchar(255) NOT NULL DEFAULT '',
+  `Size` bigint(20) NOT NULL DEFAULT '0',
+  `ed2kLink` varchar(255) NOT NULL DEFAULT '',
+  `dcppLink` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`ID`),
   KEY `FilmID` (`FilmID`),
   KEY `iPath` (`Path`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `files`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `filmcompanies`
---
 
 CREATE TABLE `filmcompanies` (
-  `FilmID` int(11) NOT NULL default '0',
-  `CompanyID` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`FilmID`,`CompanyID`),
+  `FilmID` int(11) NOT NULL DEFAULT '0',
+  `CompanyID` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`FilmID`,`CompanyID`),
   KEY `FilmID` (`FilmID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `filmcompanies`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `filmcountries`
---
 
 CREATE TABLE `filmcountries` (
-  `FilmID` int(11) NOT NULL default '0',
-  `CountryID` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`FilmID`,`CountryID`)
+  `FilmID` int(11) NOT NULL DEFAULT '0',
+  `CountryID` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`FilmID`,`CountryID`),
+  KEY `FilmID` (`FilmID`),
+  KEY `CountryID` (`CountryID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `filmcountries`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `filmgenres`
---
 
 CREATE TABLE `filmgenres` (
-  `GenreID` int(11) NOT NULL default '0',
-  `FilmID` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`GenreID`,`FilmID`)
+  `GenreID` int(11) NOT NULL DEFAULT '0',
+  `FilmID` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`GenreID`,`FilmID`),
+  KEY `FilmID` (`FilmID`),
+  KEY `GenreID` (`GenreID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `filmgenres`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `filmpersones`
---
 
 CREATE TABLE `filmpersones` (
-  `FilmID` int(11) NOT NULL default '0',
-  `RoleID` int(11) NOT NULL default '0',
-  `RoleExt` varchar(100) NOT NULL default '',
-  `PersonID` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`FilmID`,`PersonID`,`RoleID`),
+  `FilmID` int(11) NOT NULL DEFAULT '0',
+  `RoleID` int(11) NOT NULL DEFAULT '0',
+  `RoleExt` varchar(100) NOT NULL DEFAULT '',
+  `PersonID` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`FilmID`,`PersonID`,`RoleID`),
   KEY `FilmID` (`FilmID`),
   KEY `RoleID` (`RoleID`),
   KEY `PersonID` (`PersonID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `filmpersones`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `films`
---
 
 CREATE TABLE `films` (
-  `ID` int(11) NOT NULL auto_increment,
-  `Name` varchar(255) NOT NULL default '',
-  `OriginalName` varchar(255) NOT NULL default '',
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) NOT NULL DEFAULT '',
+  `OriginalName` varchar(255) NOT NULL DEFAULT '',
   `Description` text NOT NULL,
-  `Year` varchar(18) NOT NULL default '',
-  `Runtime` int(11) NOT NULL default '0',
-  `CreateDate` datetime NOT NULL default '0000-00-00 00:00:00',
-  `UpdateDate` datetime NOT NULL default '0000-00-00 00:00:00',
+  `Year` varchar(18) NOT NULL DEFAULT '',
+  `Runtime` int(11) NOT NULL DEFAULT '0',
+  `CreateDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `UpdateDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `VideoInfo` text NOT NULL,
   `AudioInfo` text NOT NULL,
-  `Translation` varchar(255) NOT NULL default '',
-  `Quality` varchar(100) NOT NULL default '',
-  `imdbID` varchar(100) NOT NULL default '',
-  `ImdbRating` int(11) NOT NULL default '0',
-  `LocalRating` int(11) NOT NULL default '0',
-  `CountLocalRating` int(11) NOT NULL default '0',
-  `MPAA` varchar(255) NOT NULL default '',
-  `Resolution` varchar(18) NOT NULL default '',
-  `Validity` int(11) NOT NULL default '0',
+  `Translation` varchar(255) NOT NULL DEFAULT '',
+  `Quality` varchar(100) NOT NULL DEFAULT '',
+  `imdbID` varchar(100) NOT NULL DEFAULT '',
+  `ImdbRating` int(11) NOT NULL DEFAULT '0',
+  `LocalRating` int(11) NOT NULL DEFAULT '0',
+  `CountLocalRating` int(11) NOT NULL DEFAULT '0',
+  `MPAA` varchar(255) NOT NULL DEFAULT '',
+  `Resolution` varchar(18) NOT NULL DEFAULT '',
+  `Validity` int(11) NOT NULL DEFAULT '0',
   `Poster` text NOT NULL,
   `SmallPoster` text NOT NULL,
   `BigPosters` text NOT NULL,
-  `Trailer` varchar(255) NOT NULL default '',
-  `Hide` tinyint(4) NOT NULL default '0',
-  `Hit` int(11) NOT NULL default '0',
-  `TypeOfMovie` varchar(255) NOT NULL default '',
-  `Moderator` int(11) default NULL,
-  `AsDir` tinyint(4) default '0',
-  `SoundTrack` varchar(255) NOT NULL default '',
+  `Trailer` varchar(255) NOT NULL DEFAULT '',
+  `Hide` tinyint(4) NOT NULL DEFAULT '0',
+  `Hit` int(11) NOT NULL DEFAULT '0',
+  `TypeOfMovie` varchar(255) NOT NULL DEFAULT '',
+  `Moderator` int(11) DEFAULT NULL,
+  `AsDir` tinyint(4) DEFAULT '0',
+  `SoundTrack` varchar(255) NOT NULL DEFAULT '',
   `Links` text,
-  `Present` varchar(255) NOT NULL default '',
-  `Group` varchar(255) NOT NULL default '',
+  `Present` varchar(255) NOT NULL DEFAULT '',
+  `Group` varchar(255) NOT NULL DEFAULT '',
   `Frames` text,
   `SmallFrames` text,
-  `LocalRatingDetail` varchar(255) NOT NULL default '',
-  `ImdbRatingDetail` varchar(255) NOT NULL default '',
-  PRIMARY KEY  (`ID`),
+  `LocalRatingDetail` varchar(255) NOT NULL DEFAULT '',
+  `ImdbRatingDetail` varchar(255) NOT NULL DEFAULT '',
+  `Rank` float NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`),
   KEY `iCreateDate` (`CreateDate`),
   KEY `iName` (`Name`),
   KEY `iOriginalName` (`OriginalName`),
   KEY `iYear` (`Year`),
-  KEY `iHit` (`Hit`)
+  KEY `iHit` (`Hit`),
+  KEY `Rank` (`Rank`),
+  KEY `Hide` (`Hide`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `films`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `genres`
---
 
 CREATE TABLE `genres` (
-  `ID` int(11) NOT NULL auto_increment,
-  `imdbGenre` varchar(18) NOT NULL default '',
-  `Name` varchar(100) NOT NULL default '',
-  PRIMARY KEY  (`ID`)
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `imdbGenre` varchar(18) NOT NULL DEFAULT '',
+  `Name` varchar(100) NOT NULL DEFAULT '',
+  PRIMARY KEY (`ID`)
 ) TYPE=MyISAM;
-
---
--- Dumping data for table `genres`
---
 
 INSERT INTO `genres` (`ID`, `imdbGenre`, `Name`) VALUES
 (1, 'Crime', 'Криминал'),
@@ -522,120 +400,83 @@ INSERT INTO `genres` (`ID`, `imdbGenre`, `Name`) VALUES
 (29, 'Reality-TV', 'Реал-ТВ'),
 (30, 'Goblin', 'Гоблин');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `hits`
---
-
 CREATE TABLE `hits` (
-  `FilmID` int(11) NOT NULL default '0',
-  `UserID` int(11) NOT NULL default '0',
-  `DateHit` datetime default NULL,
-  PRIMARY KEY  (`FilmID`,`UserID`),
+  `FilmID` int(11) NOT NULL DEFAULT '0',
+  `UserID` int(11) NOT NULL DEFAULT '0',
+  `DateHit` datetime DEFAULT NULL,
+  PRIMARY KEY (`FilmID`,`UserID`),
   KEY `FilmID` (`FilmID`),
   KEY `UserID` (`UserID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `hits`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `incoming`
---
 
 CREATE TABLE `incoming` (
-  `ID` int(11) NOT NULL auto_increment,
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
   `Path` text NOT NULL,
-  `Resolution` varchar(18) NOT NULL default '',
+  `Resolution` varchar(18) NOT NULL DEFAULT '',
   `VideoInfo` text NOT NULL,
   `AudioInfo` text NOT NULL,
-  `Runtime` int(11) NOT NULL default '0',
-  `EngName` varchar(100) NOT NULL default '',
-  `RusName` varchar(100) NOT NULL default '',
+  `Runtime` int(11) NOT NULL DEFAULT '0',
+  `EngName` varchar(100) NOT NULL DEFAULT '',
+  `RusName` varchar(100) NOT NULL DEFAULT '',
   `RusVariants` text NOT NULL,
   `ImdbVariants` text NOT NULL,
   `GoogleImageVariants` text NOT NULL,
-  `RusSearch` tinyint(4) NOT NULL default '-1',
-  `ImdbSearch` tinyint(4) NOT NULL default '-1',
-  `RusUrlParse` varchar(255) NOT NULL default '',
-  `ImdbUrlParse` varchar(255) NOT NULL default '',
-  `imdbOriginalName` varchar(100) NOT NULL default '',
-  `imdbSubtitle` varchar(100) NOT NULL default '',
-  `imdbYear` varchar(10) NOT NULL default '',
-  `imdbPosterUrl` varchar(255) NOT NULL default '',
-  `imdbMPAA` varchar(255) NOT NULL default '',
+  `RusSearch` tinyint(4) NOT NULL DEFAULT '-1',
+  `ImdbSearch` tinyint(4) NOT NULL DEFAULT '-1',
+  `RusUrlParse` varchar(255) NOT NULL DEFAULT '',
+  `ImdbUrlParse` varchar(255) NOT NULL DEFAULT '',
+  `imdbOriginalName` varchar(100) NOT NULL DEFAULT '',
+  `imdbSubtitle` varchar(100) NOT NULL DEFAULT '',
+  `imdbYear` varchar(10) NOT NULL DEFAULT '',
+  `imdbPosterUrl` varchar(255) NOT NULL DEFAULT '',
+  `imdbMPAA` varchar(255) NOT NULL DEFAULT '',
   `imdbPersones` text NOT NULL,
-  `imdbRating` varchar(100) NOT NULL default '',
+  `imdbRating` varchar(100) NOT NULL DEFAULT '',
   `imdbCountries` text NOT NULL,
   `imdbDesription` text NOT NULL,
   `imdbGenres` text NOT NULL,
-  `imdbParsed` tinyint(1) NOT NULL default '0',
-  `rusRusName` varchar(255) NOT NULL default '',
-  `rusOriginalName` varchar(255) NOT NULL default '',
-  `rusPosterUrl` varchar(100) NOT NULL default '',
-  `rusYear` varchar(10) NOT NULL default '',
+  `imdbParsed` tinyint(1) NOT NULL DEFAULT '0',
+  `rusRusName` varchar(255) NOT NULL DEFAULT '',
+  `rusOriginalName` varchar(255) NOT NULL DEFAULT '',
+  `rusPosterUrl` varchar(100) NOT NULL DEFAULT '',
+  `rusYear` varchar(10) NOT NULL DEFAULT '',
   `rusCountries` text NOT NULL,
   `rusGenres` text NOT NULL,
   `rusCompanies` text NOT NULL,
-  `rusTypeOfMovie` varchar(100) NOT NULL default '',
+  `rusTypeOfMovie` varchar(100) NOT NULL DEFAULT '',
   `rusDescription` text NOT NULL,
   `rusPersones` text NOT NULL,
-  `rusParsed` tinyint(4) NOT NULL default '0',
-  `IsNode` tinyint(4) NOT NULL default '0',
-  `Hide` tinyint(4) NOT NULL default '0',
-  `Quality` varchar(100) NOT NULL default '',
-  `Translation` varchar(255) NOT NULL default '',
-  PRIMARY KEY  (`ID`),
+  `rusParsed` tinyint(4) NOT NULL DEFAULT '0',
+  `IsNode` tinyint(4) NOT NULL DEFAULT '0',
+  `Hide` tinyint(4) NOT NULL DEFAULT '0',
+  `Quality` varchar(100) NOT NULL DEFAULT '',
+  `Translation` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`ID`),
   KEY `iPath` (`Path`(50))
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `incoming`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `persones`
---
 
 CREATE TABLE `persones` (
-  `ID` int(11) NOT NULL auto_increment,
-  `RusName` varchar(100) NOT NULL default '',
-  `OriginalName` varchar(100) NOT NULL default '',
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `RusName` varchar(100) NOT NULL DEFAULT '',
+  `OriginalName` varchar(100) NOT NULL DEFAULT '',
   `Description` text NOT NULL,
   `Images` text NOT NULL,
-  `OzonUrl` varchar(100) default '',
-  `LastUpdate` datetime NOT NULL default '0000-00-00 00:00:00',
-  PRIMARY KEY  (`ID`)
+  `Photos` text,
+  `OzonUrl` varchar(100) DEFAULT '',
+  `Rank` float NOT NULL DEFAULT '0',
+  `LastUpdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`ID`),
+  KEY `Rank` (`Rank`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `persones`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `rnd_text`
---
 
 CREATE TABLE `rnd_text` (
-  `ID` int(11) NOT NULL auto_increment,
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
   `Text` text NOT NULL,
-  PRIMARY KEY  (`ID`)
+  PRIMARY KEY (`ID`)
 ) TYPE=MyISAM;
-
---
--- Dumping data for table `rnd_text`
---
 
 INSERT INTO `rnd_text` (`ID`, `Text`) VALUES
 (1, 'Самая большая трата, какую только можно сделать, — это трата времени. (Теофраст (Феофраст))'),
@@ -828,22 +669,14 @@ INSERT INTO `rnd_text` (`ID`, `Text`) VALUES
 (188, 'Эта ваша музыка. Дает она что-то? Нет, не дает. А надо, чтобы давала. Нужно, чтоб музыка тебя брала, нужно, чтобы она тебя вела, но в то же время и не уводила. (товарищ Огурцов, к/ф "Карнавальная ночь")'),
 (189, 'Басня - это хорошо, басня - это сатира. Нам гоголи-щедрины нужны. (товарищ Огурцов, к/ф "Карнавальная ночь")');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `roles`
---
-
 CREATE TABLE `roles` (
-  `ID` int(11) NOT NULL auto_increment,
-  `Role` varchar(100) NOT NULL default '',
-  `SortOrder` int(11) NOT NULL default '5',
-  PRIMARY KEY  (`ID`)
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Role` varchar(100) NOT NULL DEFAULT '',
+  `SortOrder` int(11) NOT NULL DEFAULT '5',
+  PRIMARY KEY (`ID`),
+  KEY `Role` (`Role`),
+  KEY `SortOrder` (`SortOrder`)
 ) TYPE=MyISAM;
-
---
--- Dumping data for table `roles`
---
 
 INSERT INTO `roles` (`ID`, `Role`, `SortOrder`) VALUES
 (1, 'режиссер', 1),
@@ -866,75 +699,70 @@ INSERT INTO `roles` (`ID`, `Role`, `SortOrder`) VALUES
 (19, 'исполнение песни', 5),
 (20, 'автор программы', 4);
 
--- --------------------------------------------------------
+CREATE TABLE `search_trigrams` (
+  `trigram` char(3) NOT NULL,
+  `type` enum('film','person') NOT NULL,
+  `id` int(11) NOT NULL,
+  KEY `trigram` (`trigram`,`type`),
+  KEY `type` (`type`,`id`)
+) TYPE=MyISAM;
 
---
--- Table structure for table `userfilmratings`
---
+
+CREATE TABLE `suggestion` (
+  `suggestion_id` int(11) NOT NULL AUTO_INCREMENT,
+  `word` varchar(255) NOT NULL,
+  `type` enum('film','person') NOT NULL,
+  `id` int(11) NOT NULL,
+  PRIMARY KEY (`suggestion_id`),
+  UNIQUE KEY `word_2` (`word`,`type`,`id`),
+  KEY `word` (`word`)
+) TYPE=MyISAM;
+
+
+CREATE TABLE `suggestion_cache` (
+  `query` varchar(255) NOT NULL,
+  `result` text NOT NULL,
+  PRIMARY KEY (`query`)
+) TYPE=MyISAM;
+
 
 CREATE TABLE `userfilmratings` (
-  `FilmID` int(11) NOT NULL default '0',
-  `UserID` int(11) NOT NULL default '0',
-  `Rating` tinyint(11) NOT NULL default '0',
-  `Date` datetime NOT NULL default '0000-00-00 00:00:00',
-  PRIMARY KEY  (`FilmID`,`UserID`),
+  `FilmID` int(11) NOT NULL DEFAULT '0',
+  `UserID` int(11) NOT NULL DEFAULT '0',
+  `Rating` tinyint(11) NOT NULL DEFAULT '0',
+  `Date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`FilmID`,`UserID`),
   KEY `FilmID` (`FilmID`),
   KEY `UserID` (`UserID`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `userfilmratings`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
 
 CREATE TABLE `users` (
-  `ID` int(11) NOT NULL auto_increment,
-  `Login` varchar(32) NOT NULL default '',
-  `Password` varchar(32) NOT NULL default '',
-  `Email` varchar(255) NOT NULL default '',
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Login` varchar(32) NOT NULL DEFAULT '',
+  `Password` varchar(32) NOT NULL DEFAULT '',
+  `Email` varchar(255) NOT NULL DEFAULT '',
   `IP` text NOT NULL,
-  `Balans` decimal(9,2) NOT NULL default '1.00',
-  `UserGroup` tinyint(4) NOT NULL default '0',
-  `ViewActivity` int(11) NOT NULL default '0',
-  `PlayActivity` int(11) NOT NULL default '0',
-  `RegisterDate` datetime default NULL,
-  `Mode` int(11) NOT NULL default '1',
-  `ipfw_rule` int(11) NOT NULL default '0',
-  `Enabled` tinyint(4) NOT NULL default '1',
+  `Balans` decimal(9,2) NOT NULL DEFAULT '1.00',
+  `UserGroup` tinyint(4) NOT NULL DEFAULT '0',
+  `ViewActivity` int(11) NOT NULL DEFAULT '0',
+  `PlayActivity` int(11) NOT NULL DEFAULT '0',
+  `RegisterDate` datetime DEFAULT NULL,
+  `Mode` int(11) NOT NULL DEFAULT '1',
+  `ipfw_rule` int(11) NOT NULL DEFAULT '0',
+  `Enabled` tinyint(4) NOT NULL DEFAULT '1',
   `Preferences` text NOT NULL,
-  PRIMARY KEY  (`ID`),
+  PRIMARY KEY (`ID`),
   KEY `iLogin` (`Login`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `users`
---
 
-
--- --------------------------------------------------------
-
---
--- Table structure for table `version`
---
-
-CREATE TABLE IF NOT EXISTS `version` (
-  `product_code` varchar(255) NOT NULL default '',
-  `revision` int(11) default NULL,
-  PRIMARY KEY  (`product_code`)
+CREATE TABLE `version` (
+  `product_code` varchar(255) NOT NULL DEFAULT '',
+  `revision` int(11) DEFAULT NULL,
+  PRIMARY KEY (`product_code`)
 ) TYPE=MyISAM;
 
---
--- Dumping data for table `version`
---
--- Здесь допустима ошибка (Duplicate entry 'lms_platform' for key 1)
-
-INSERT INTO `version` (`product_code`, `revision`) VALUES
-('lms_video', 6),
+INSERT IGNORE INTO `version` (`product_code`, `revision`) VALUES
+('lms_video_1_1', 1),
 ('lms_platform', 1);
-

@@ -1,0 +1,49 @@
+{for film in films}
+    {if film.film_id}
+        <div class="item" mid="${film.film_id}">
+            <div class="cover">
+                <a href="#/movie/id/${film.film_id}">
+                    <img src="${film.cover}" class="cover">
+                </a>
+            </div>
+            <div class="stat">
+                {if film.rating_imdb_value>0}
+                    <div class="rating" title="Рейтинг IMDB: ${film.rating_imdb_value}">
+                        <div class="starbar imdb">
+                            <div class="inner" style="width:${film.rating_imdb_value * 10}%"></div>
+                        </div>
+                        <div class="value">${film.rating_imdb_value}</div>
+                    </div>
+                {/if}
+                {if film.rating_local_value>0}
+                    <div class="rating" title="Локальный рейтинг: ${film.rating_local_value} (${film.rating_local_count} голосов)">
+                        <div class="starbar local">
+                            <div class="inner" style="width:${film.rating_local_value * 10}%"></div>
+                        </div>
+                        <div class="value">${film.rating_local_value}</div>
+                    </div>
+                {/if}
+            </div>
+            <div class="title">
+                <a href="#/movie/id/${film.film_id}">
+                    ${film.name}
+                </a>
+                {if film.hide}(скрыт){/if}
+                {if film.popular}<span class="popular">хит!</span>{/if}
+                {if USER_GROUP!=0}<div {if window.ui.bookmarkExists(film.film_id)} class="bookmark on" title="Удалить закладку" {else} class="bookmark" title="Добавить в закладки" {/if} mid="${film.film_id}" onclick="window.ui.toogleBookmark(${film.film_id})"></div>{/if}
+            </div>
+            <div class="subtitle">${film.international_name} {if film.year} (${film.year}){/if}</div>
+            <div class="table main">
+                {if film.genres}<div class="row"><div>Жанр:</div> <div>${film.genres.join(' / ')}</div></div>{/if}
+                {if film.countries}<div class="row"><div>Страна:</div> <div>${film.countries.join(' / ')}</div></div>{/if}
+                {if film.directors}<div class="row"><div>Режиссер:</div> <div>${film.directors.join(', ')}</div></div>{/if}
+                {if film.cast}<div class="row"><div>В ролях:</div> <div>${film.cast.join(', ')}</div></div>{/if}
+            </div>            
+            {if film.genres1}<div class="genre">Жанр: ${film.genres.join(' / ')}</div>{/if}
+            {if film.countries1}<div class="country">Страна: ${film.countries.join(' / ')}</div>{/if}
+            {if film.directors1}<div class="director">Режиссер: ${film.directors.join(', ')}</div>{/if}
+            {if film.cast1}<div title="${film.cast.join(', ')}" class="cast">В ролях: ${film.cast.join(', ')}</div>{/if}
+            <br style="clear: both;">
+        </div>
+    {/if}
+{/for} 

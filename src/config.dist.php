@@ -48,7 +48,7 @@ $config['customer']['pass'] = "demo";
 $config['customer']['updateservice'] = "http://update.lanmediaservice.com/actions.php";
 $config['customer']['parser_service'] = 'http://service.lanmediaservice.com/2/actions.php';
 $config['customer']['products']['lms_platform'] = "./"; //путь к файлам общих скриптов (если идут в комплекте)
-$config['customer']['products']['lms_video'] = "./"; //путь к файлам скрипта видео-каталога
+$config['customer']['products']['lms_video_1_1'] = "./"; //путь к файлам скрипта видео-каталога
 
 //Учетные данные mysql
 $config['mysqlhost'] = "localhost";
@@ -113,15 +113,15 @@ $config["register_timeout"] = 60;
 
 // Шаблон оформления 
 // Шаблоны находятся в каталоге "templates/"
-$config['template'] = "flat.dist";
-//Дополнительные пункты меню (только для шаблона flat.dist)  
+$config['template'] = "modern";
+//Дополнительные пункты меню (только для шаблонов flat.dist и modern)  
 $config['topmenu_links'] = array(
     array('url'=>'/music/', 'text'=>'Музыка'),
     array('url'=>'/video/', 'text'=>'Видео', 'selected'=>true),
     array('url'=>'/forum/', 'text'=>'Форум')
 );
 
-//Дополнительные пункты в нижнем футере (только для шаблона flat.dist) 
+//Дополнительные пункты в нижнем футере (только для шаблонов flat.dist и modern) 
 $config['support_links'] = array(
     array('url'=>'/support/', 'text'=>'Задать вопрос'),
     array('url'=>'mailto:support@isp.com', 'text'=>'Написать письмо'),
@@ -487,4 +487,15 @@ $config['short_translation']["Любительский многоголосый"] = 'MVO';
 $config['short_translation']["Одноголосый"] = 'VO';
 $config['short_translation']["Гоблин (правильный)"] = 'AVO(Гоблин)';
 $config['short_translation']["Субтитры"] = 'Sub';
-?>
+
+/**
+ * Настройки отображения ссылок в шаблоне modern
+ */
+//какие ссылки пользователь может включать/отключать:
+$config['download']['selectable'] = array('smb'=>true, 'dcpp'=>true, 'ed2k'=>false);
+//установки по-умолчанию
+$config['download']['defaults'] = array('smb'=>false, 'dcpp'=>false);
+//какие плейлисты может выбирать пользователь:
+$config['download']['players']['selectable'] = array('la'=>false, 'mp'=>true, 'mpcpl'=>true, 'bsl'=>true, 'crp'=>true, 'tox'=>true, 'kaf'=>true, 'pls'=>true, 'xspf'=>true);
+//плейлист по-умолчанию:
+$config['download']['players']['default'] = 'xspf'; 

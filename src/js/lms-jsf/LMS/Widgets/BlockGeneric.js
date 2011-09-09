@@ -39,6 +39,7 @@ LMS.Widgets.BlockGeneric = Class.create(LMS.Widgets.Generic, {
         for (var i=0; i<this._childs.length; i++) {
             this.wrapperElement.appendChild(this._childs[i]);
         }
+        return this;
     },
     /**
      * Виртуальный метод сбора коллекции элементов для включения в блок
@@ -54,6 +55,7 @@ LMS.Widgets.BlockGeneric = Class.create(LMS.Widgets.Generic, {
         if (this.wrapperElement) {
             this.wrapperElement.appendChild(element);
         }
+        return this;
     },
     /**
      * Виртуальный метод сброса коллекции элементов
@@ -69,6 +71,7 @@ LMS.Widgets.BlockGeneric = Class.create(LMS.Widgets.Generic, {
             //this.wrapperElement.childElements().invoke('remove');
             this.wrapperElement.innerHTML = '';
         }
+        return this;
     },
     /**
      * Добавление в блок виджета
@@ -80,6 +83,7 @@ LMS.Widgets.BlockGeneric = Class.create(LMS.Widgets.Generic, {
      */
     addWidget: function(widget) { 
         this._appendChild(widget.createElement());
+        return this;
     },
     /**
      * Добавление в блок текста (plain/text). Если на входе текст будет в виде 
@@ -94,6 +98,7 @@ LMS.Widgets.BlockGeneric = Class.create(LMS.Widgets.Generic, {
      */
     addText: function(text) { 
         this._appendChild(document.createTextNode(text));
+        return this;
     },
     /**
      * Добавление в блок текста с HTML-форматированием (text/html).
@@ -114,6 +119,7 @@ LMS.Widgets.BlockGeneric = Class.create(LMS.Widgets.Generic, {
         for (var i=0; i<childNodes.length; i++) {
             this._appendChild(childNodes[i]);
         }
+        return this;
     },
     /**
      * Сброс всех элементов и добавление в блок текста с HTML-форматированием
@@ -127,6 +133,7 @@ LMS.Widgets.BlockGeneric = Class.create(LMS.Widgets.Generic, {
     setHTML: function(htmlText) { 
         this.reset();
         this.addHTML(htmlText)
+        return this;
     },
     /**
      * Добавление в блок HTML-элемента
@@ -138,5 +145,6 @@ LMS.Widgets.BlockGeneric = Class.create(LMS.Widgets.Generic, {
      */
     addElement: function(element) { 
         this._appendChild(element);
+        return this;
     }
 });

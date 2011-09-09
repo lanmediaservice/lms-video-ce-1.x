@@ -1,0 +1,40 @@
+Обновление скрипта видео-каталога с версии 1.0 до 1.1
+
+1. Скачать дистрибутив версии 1.1
+
+2. Выполнить обновление базы данных /db/update-001.sql
+
+3. Распаковать файлы подкаталога video/ поверх рабочей версии.
+
+4. Переименовать файл /app/local.settings.dist.php в local.settings.php
+
+5. Добавить в config.php:
+/**
+ * Настройки отображения ссылок в шаблоне modern
+ */
+//какие ссылки пользователь может включать/отключать:
+$config['download']['selectable'] = array('smb'=>true, 'dcpp'=>true, 'ed2k'=>false);
+//установки по-умолчанию
+$config['download']['defaults'] = array('smb'=>false, 'dcpp'=>false);
+//какие плейлисты может выбирать пользователь:
+$config['download']['players']['selectable'] = array('la'=>false, 'mp'=>true, 'mpcpl'=>true, 'bsl'=>true, 'crp'=>true, 'tox'=>true, 'kaf'=>true, 'pls'=>true, 'xspf'=>true);
+//плейлист по-умолчанию:
+$config['download']['players']['default'] = 'xspf';
+
+6. Изменить в config.php
+$config['customer']['products']['lms_video'] = "./";
+на 
+$config['customer']['products']['lms_video_1_1'] = "./";
+
+7. Для большей безопасности убедиться что каталог http://mysite.com/video/app/ не доступен через браузер.
+
+8. Удалить каталог install/
+
+9. Убедится, что скрипт периодического обслуживания индекса поиска, отбора бестселлеров работает:
+    /app/tasks/batch-daily.php
+
+    и добавить его в crontab (Unix):
+    0 5 * * * /path/to/video/app/tasks/batch-daily.php 2>&1 >/dev/null
+
+    или в планировщик Windows (запуск 1 раз в сутки или по желанию):
+    c:\php\php.exe c:\www\video\app\tasks\batch-daily.php

@@ -20,6 +20,9 @@ JSAN.require('LMS.Widgets.Generic');
  * @augments LMS.Widgets.Generic
  */
 LMS.Widgets.SelectBox = Class.create(LMS.Widgets.Generic, {
+    size: null,
+    multiple: null,
+    _attributes: ['size', 'multiple'],
     initialize: function($super) {
         $super();
         this._decorators['forms'] = this.decoratorInitFormElement;
@@ -30,6 +33,13 @@ LMS.Widgets.SelectBox = Class.create(LMS.Widgets.Generic, {
         var self = this;
         this.wrapperElement.onchange = function () {
             self.setValue(this.value);
+        }
+        this.wrapperElement.ondblclick = function () {
+            var value = self.getValue();
+            if (Object.isArray(value)){
+                value = value[0];
+            }
+            self.emit('dblClick', value, self);
         }
     },
     onCreateElement: function() { 
@@ -47,7 +57,7 @@ LMS.Widgets.SelectBox = Class.create(LMS.Widgets.Generic, {
     },
     setValue: function(value)
     {
-        if (this.value != value) {
+        if (this.value != value && !this.multiple) {
             if (this.wrapperElement){
                 this.wrapperElement.value = value;
                 value = this.wrapperElement.value;
@@ -66,6 +76,20 @@ LMS.Widgets.SelectBox = Class.create(LMS.Widgets.Generic, {
         this.selectOptions.push(opt);
         if (this.wrapperElement) {
             this.wrapperElement.options[this.wrapperElement.options.length] = opt;
+        }
+    },
+    removeItem: function(value) {
+        for (var i=this.selectOptions.length-1; i>=0; i--) {
+            if (this.selectOptions[i].value==value) {
+                this.selectOptions.splice(i, 1);
+            }
+        }
+        if (this.wrapperElement) {
+            for (var i=this.wrapperElement.options.length-1; i>=0; i--) {
+                if (this.wrapperElement.options[i].value==value) {
+                    this.wrapperElement.options[i] = null;
+                }
+            }
         }
     },
     addItems: function(items) {
@@ -89,6 +113,38 @@ LMS.Widgets.SelectBox = Class.create(LMS.Widgets.Generic, {
     setEnabled: function($super, enabled){
         $super(enabled && !this.readOnly)
         this.enabled = enabled;
+    },
+    setSize: function(value)
+    {
+        this._setAttribute('size', value);
+    },
+    getSize: function()
+    {
+        return this.size;
+    },
+    setMultiple: function(value)
+    {
+        this._setAttribute('multiple', value);
+    },
+    getMultiple: function()
+    {
+        return this.multiple;
+    },
+    getValue: function($super)
+    {
+        if (this.multiple) {
+            var value = [];
+            if (this.wrapperElement) {
+                for (var i=0; i<this.wrapperElement.options.length; i++) {
+                    if (this.wrapperElement.options[i].selected) {
+                        value.push(this.wrapperElement.options[i].value);
+                    }
+                }
+            }
+            return value;
+        } else {
+            return $super();
+        }
     }
 });
 

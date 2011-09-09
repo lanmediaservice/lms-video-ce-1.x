@@ -37,7 +37,7 @@ if (isset($config['mysql_set_names'])) mysql_query($config['mysql_set_names']);
 <title>Администратор видео-каталога</title>
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
 <link id="luna-tab-style-sheet" type="text/css" rel="stylesheet" href="tabpane/css/luna/tab.css" />
-<script language="JavaScript" src="js/prototype-1.6.0.3.js"></script> 
+<script language="JavaScript" src="js/prototype-1.7.0.0.js"></script> 
 <script language="JavaScript" src="jshttprequest/JsHttpRequest.js"></script>
 <script language="JavaScript" src="common/jhr_controller.js"></script>
 <script language="JavaScript" src="strings.js"></script>
@@ -2056,7 +2056,8 @@ if (isset($config['mysql_set_names'])) mysql_query($config['mysql_set_names']);
                     outstr += "<tr><td>Имя (рус.):</td><td><input onChange='UpdatePersonField("+personid+",\"RusName\",this)'type='text' id='_RusName"+personid+"' size='100'></td></tr>"
                     outstr += "<tr><td>Имя (англ.):</td><td><input onChange='UpdatePersonField("+personid+",\"OriginalName\",this)' type='text' id='_OriginalName"+personid+"' size='100'></td></tr>"
                     outstr += "<tr><td>Информация:</td><td><textarea onChange='UpdatePersonField("+personid+",\"Description\",this)' id='_Description"+personid+"' rows='10' style='width:100%'></textarea></td></tr>"
-                    outstr += "<tr><td>Фотографии:</td><td><textarea onChange='UpdatePersonField("+personid+",\"Images\",this)' id='_Images"+personid+"' rows='10' style='width:100%'></textarea></td></tr>"
+                    outstr += "<tr><td>Фотографии:</td><td><textarea onChange='UpdatePersonField("+personid+",\"Photos\",this)' id='_Photos"+personid+"' rows='5' style='width:100%'></textarea></td></tr>"
+                    outstr += "<tr><td>Уменьшенные фотографии:</td><td><textarea onChange='UpdatePersonField("+personid+",\"Images\",this)' id='_Images"+personid+"' rows='5' style='width:100%'></textarea></td></tr>"
                     outstr += "<tr><td>Ozon URL:</td><td><input onChange='UpdatePersonField("+personid+",\"OzonUrl\",this)' type='text' id='_OzonUrl' size='100'> <a href='javascript:SearchPersonOnOzon("+personid+")'>Найти на ozon.ru</a><div id='ozonpersonsearch' style='padding:8px; z-index:1;position:relative;display:none;background-color:#F0F0F0;border:1px solid silver;'></div></td></tr>"
                     outstr += "<tr><td width='1%' nowrap>Обновление:</td><td><input onChange='UpdatePersonField("+personid+",\"LastUpdate\",this)' type='text' id='_LastUpdate"+personid+"' size='100'></td></tr>"
                     outstr += "</table>"
@@ -2133,6 +2134,7 @@ if (isset($config['mysql_set_names'])) mysql_query($config['mysql_set_names']);
                     document.getElementById("_RusName"+personid).value = person.RusName;
                     document.getElementById("_OriginalName"+personid).value = person.OriginalName;
                     document.getElementById("_Description"+personid).value = person.Description;
+                    document.getElementById("_Photos"+personid).value = person.Photos;
                     document.getElementById("_Images"+personid).value = person.Images;
                     document.getElementById("_OzonUrl").value = person.OzonUrl;
                     document.getElementById("_LastUpdate"+personid).value = person.LastUpdate;

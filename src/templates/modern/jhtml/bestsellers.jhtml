@@ -1,0 +1,25 @@
+{for bestseller in bestsellers}
+    <section>
+        <div class="sectionheader">
+            ${bestseller.name}
+        </div>
+        {for film in bestseller.films}
+            {if film.film_id && film_index<5}
+                <div class="item" mid="${film.film_id}" title="${film.name|htmlspecialchars} &lt;br&gt; ${film.international_name|htmlspecialchars} (${film.year|escape})">
+                    <div class="cover">
+                        <a href="#/movie/id/${film.film_id}">
+                            <img src="${film.cover}" class="cover">
+                        </a>
+                    </div>
+                    <a class="title" href="#/movie/id/${film.film_id}">
+                        ${film.name}
+                    </a>
+                    <a class="subtitle" href="#/movie/id/${film.film_id}">
+                        ${film.international_name} (${film.year})
+                    </a>
+                </div>
+            {/if}
+        {/for}
+    </section>
+{/for}
+    

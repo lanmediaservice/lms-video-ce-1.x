@@ -1,14 +1,9 @@
 /**
  * @requires Prototype Library
  */
- 
-if (Object.isUndefined(LMS)) {
-    /** 
-     * @namespace Base namespace for misc classes
-     */
-    var LMS = {};
-}
- 
+
+JSAN.require('LMS');
+
  /**
  * @namespace Utils
  */
@@ -101,3 +96,16 @@ LMS.Utils.addCSSRule = function (ruleName) {
     }
     return LMS.Utils.getCSSRule(ruleName);
 }
+
+LMS.Utils.emit = function()
+{
+    var args = Array.prototype.slice.call(arguments);  
+    var signalName = args.shift();
+    var connections = LMS.Connector.getConnections(null, signalName);
+    for (var i=0; i<connections.length; i++) {
+        var slotObject = connections[i][0];
+        var slotName = connections[i][1];
+        slotObject[slotName].apply(slotObject, args);
+    }
+}
+
