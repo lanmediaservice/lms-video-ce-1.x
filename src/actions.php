@@ -562,7 +562,7 @@ if (getRights($action,$user) || ($action=="exit")){
                     .((strlen($res["Profile"]))?$res["Profile"]."\r\n":"")
                     .((strlen($res["About"]))?$res["About"]."\r\n":""));
                     $photos =  addslashes(implode("\r\n",$res["Photos"]));
-                    $sql = "UPDATE persones SET RusName='$RusName', OriginalName='$OriginalName', Description = '$about', Images = '$photos', OzonUrl='$ozonurl', LastUpdate = NOW() WHERE ID=$id";
+                    $sql = "UPDATE persones SET RusName='$RusName', OriginalName='$OriginalName', Description = '$about', Images = '$photos', Photos = '$photos', OzonUrl='$ozonurl', LastUpdate = NOW() WHERE ID=$id";
                     mysql_query($sql);
                 }
                 else{
@@ -1204,9 +1204,9 @@ if (getRights($action,$user) || ($action=="exit")){
                     $maxfree = 0;
                     $mystorage = $config['storages'][0];
                     foreach($config['storages'] as $storage){
-                        if (disk_free_space($storage)>$maxfree){
+                        if (disk_free_space($storage)/disk_total_space($storage)>$maxfree){
                             $mystorage = $storage;
-                            $maxfree = disk_free_space($storage);
+                            $maxfree = disk_free_space($storage)/disk_total_space($storage);
                         }
                     }
                     $movefile = 1;
@@ -1664,7 +1664,7 @@ if (getRights($action,$user) || ($action=="exit")){
                     .((strlen($res["Profile"]))?$res["Profile"]."\r\n":"")
                     .((strlen($res["About"]))?$res["About"]."\r\n":""));
                     $photos =  addslashes(implode("\r\n",$res["Photos"]));
-                    $sql = "UPDATE persones SET Description = '$about', Images = '$photos', LastUpdate = NOW() $update_names WHERE ID=$id";
+                    $sql = "UPDATE persones SET Description = '$about', Images = '$photos', Photos = '$photos', LastUpdate = NOW() $update_names WHERE ID=$id";
                     mysql_query($sql);
                 }
 
@@ -1872,7 +1872,7 @@ if (getRights($action,$user) || ($action=="exit")){
                     $genres[] = $field2["GenreID"];
                 }
 
-                $result2 = mysql_query("SELECT * FROM genres");
+                $result2 = mysql_query("SELECT * FROM genres ORDER BY Name");
                 $allgenres = array();
                 while ($result2 && $field2 = mysql_fetch_assoc($result2)){
                     if (in_array($field2["ID"],$genres)) $field2["checked"] = 1; else $field2["checked"] = 0;
@@ -2122,7 +2122,7 @@ if (getRights($action,$user) || ($action=="exit")){
 
         case "getpersondetail":
             $person = (isset($_REQUEST['person'])) ? (int) $_REQUEST['person'] : null;
-            $sql = "SELECT ID, RusName, OriginalName, Description, Images, OzonUrl, LastUpdate FROM persones WHERE ID=$person";
+            $sql = "SELECT ID, RusName, OriginalName, Description, Images, Photos, OzonUrl, LastUpdate FROM persones WHERE ID=$person";
             $result = mysql_query($sql);
             while ($result && $field = mysql_fetch_assoc($result)) {
                 $_RESULT = $field;

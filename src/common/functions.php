@@ -511,6 +511,14 @@ function Prep($str)
 	return preg_replace (array("/\r/", "/\n/", "/\"/"), array("\\r", "\\n", "\\\""), $str);
 }
 
+function escapeJs($content)
+{
+    $content = addslashes($content);
+    $content = str_replace(array("\r","\n"), array("\\r","\\n"), $content);
+    return $content;
+}
+
+
 function googleSearch($title)
 {
 	$googleServer = "http://images.google.com";

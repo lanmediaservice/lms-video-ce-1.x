@@ -60,6 +60,12 @@ LMS.Signalable = Class.create({
             var slotName = connections[i][1];
             slotObject[slotName].apply(slotObject, args);
         }
+        return this;
+    },
+    connect: function(signalName, slotObject, slotName) 
+    {
+        LMS.Connector.connect(this, signalName, slotObject, slotName);
+        return this;
     }
 });
 

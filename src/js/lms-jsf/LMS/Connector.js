@@ -60,6 +60,7 @@ LMS.Connector.connect = function ()
         LMS.Connector.connections[signalObjectIndex][signalName] = [];
     }
     LMS.Connector.connections[signalObjectIndex][signalName].push(LMS.Connector.pack(slotObject, slotName));
+    LMS.Connector.connections[signalObjectIndex][signalName] = LMS.Connector.connections[signalObjectIndex][signalName].uniq();
 }
 
 LMS.Connector.disconnect = function ()
@@ -94,11 +95,32 @@ LMS.Connector.disconnect = function ()
     LMS.Connector.connections[signalObjectIndex][signalName] = LMS.Connector.connections[signalObjectIndex][signalName].without(slot);
 }
 
+LMS.Connector.disconnectAll = function(object)
+{
+    var objectIndex = LMS.Connector.getObjectIndex(object);
+    if (LMS.Connector.connections[objectIndex]) {
+        delete LMS.Connector.connections[objectIndex];
+    }
+    for (var signalObjectIndex in LMS.Connector.connections) {
+        for (var signalName in LMS.Connector.connections[signalObjectIndex]) {
+            for (var i=LMS.Connector.connections[signalObjectIndex][signalName].length-1; i>=0; i--) {
+                var connection = LMS.Connector.unpack(LMS.Connector.connections[signalObjectIndex][signalName][i]);
+                if (connection[0]==object) {
+                    LMS.Connector.connections[signalObjectIndex][signalName].splice(i, 1);
+                }
+            }
+        }
+    }
+    
+}
+
 LMS.Connector.getConnections = function (signalObject, signalName)
 {
     var connections = [];
-    var signalObjectIndex = LMS.Connector.getObjectIndex(signalObject);
-    LMS.Connector.fillConnections(connections, signalObjectIndex, signalName);
+    if (signalObject !== null) {
+        var signalObjectIndex = LMS.Connector.getObjectIndex(signalObject);
+        LMS.Connector.fillConnections(connections, signalObjectIndex, signalName);
+    }
     var signalObjectIndex = LMS.Connector.getObjectIndex(null);
     LMS.Connector.fillConnections(connections, signalObjectIndex, signalName);
     return connections;
