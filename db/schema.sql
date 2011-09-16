@@ -764,5 +764,5 @@ CREATE TABLE `version` (
 ) TYPE=MyISAM;
 
 INSERT IGNORE INTO `version` (`product_code`, `revision`) VALUES
-('lms_video', 6),
+('lms_video_1_1', 1),
 ('lms_platform', 1);

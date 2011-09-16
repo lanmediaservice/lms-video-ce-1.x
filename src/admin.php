@@ -37,7 +37,7 @@ if (isset($config['mysql_set_names'])) mysql_query($config['mysql_set_names']);
 <title>Администратор видео-каталога</title>
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
 <link id="luna-tab-style-sheet" type="text/css" rel="stylesheet" href="tabpane/css/luna/tab.css" />
-<script language="JavaScript" src="js/prototype-1.6.0.3.js"></script> 
+<script language="JavaScript" src="js/prototype-1.7.0.0.js"></script> 
 <script language="JavaScript" src="jshttprequest/JsHttpRequest.js"></script>
 <script language="JavaScript" src="common/jhr_controller.js"></script>
 <script language="JavaScript" src="strings.js"></script>
