@@ -2,36 +2,42 @@
 
 1. Скачать дистрибутив версии 1.1
 
-2. Выполнить обновление базы данных /db/update-001.sql
+2. Выполнить в БД скрипт обновления update-001.sql
 
 3. Распаковать файлы подкаталога video/ поверх рабочей версии.
 
 4. Переименовать файл /app/local.settings.dist.php в local.settings.php
 
-5. Добавить в config.php:
+5. Если в рабочей версии используется logon.php с шифрованием cookies, то 
+   шифрование также нужно настроить в файле local.settings.php
+
+6. Добавить в config.php:
 /**
  * Настройки отображения ссылок в шаблоне modern
  */
 //какие ссылки пользователь может включать/отключать:
-$config['download']['selectable'] = array('smb'=>true, 'dcpp'=>true, 'ed2k'=>false);
+$config['download']['selectable'] = array('smb'=>true, 'dcpp'=>true, 'ed2k'=>true);
 //установки по-умолчанию
-$config['download']['defaults'] = array('smb'=>false, 'dcpp'=>false);
+$config['download']['defaults'] = array('smb'=>true, 'dcpp'=>true, 'ed2k'=>true);
 //какие плейлисты может выбирать пользователь:
 $config['download']['players']['selectable'] = array('la'=>false, 'mp'=>true, 'mpcpl'=>true, 'bsl'=>true, 'crp'=>true, 'tox'=>true, 'kaf'=>true, 'pls'=>true, 'xspf'=>true);
 //плейлист по-умолчанию:
-$config['download']['players']['default'] = 'xspf';
+$config['download']['players']['default'] = 'xspf'; 
 
-6. Изменить в config.php
-$config['customer']['products']['lms_video'] = "./";
-на 
-$config['customer']['products']['lms_video_1_1'] = "./";
+7. Изменить канал обновлений в config.php
+   $config['customer']['products']['lms_video'] = "./";
+   на 
+   $config['customer']['products']['lms_video_1_1'] = "./";
 
-7. Для большей безопасности убедиться что каталог http://mysite.com/video/app/ 
+8. Изменить шаблон в config.php:
+   $config['template'] = 'modern';
+
+9. Для большей безопасности убедиться, что каталог http://mysite.com/video/app/ 
    не доступен через браузер.
 
-8. Удалить каталог install/
+10. Удалить каталог install/
 
-9. Убедится, что скрипт периодического обслуживания индекса поиска, отбора бестселлеров работает:
+11. Убедится, что скрипт периодического обслуживания индекса поиска, отбора бестселлеров работает:
    /app/tasks/batch-daily.sh или /app/tasks/batch-daily.bat
 
    и добавить его в crontab (Unix):
@@ -42,11 +48,11 @@ $config['customer']['products']['lms_video_1_1'] = "./";
     
    Примечание: для Windows в файле php.bat необходимо прописать полный путь к php.exe
 
-10. Для того, чтобы фото персоналий выглядели лучше (в шаблоне modern они 
-    увеличены с 60 до 90 пикселей) необходимо перезакачать все персоналии.
+12. Для того, чтобы фото персоналий выглядели лучше (в шаблоне modern они 
+    увеличены с 60 до 90 пикселей), необходимо перезакачать все персоналии.
     Для этого нужно выполнить в БД запрос:
 
     UPDATE `persones` SET `LastUpdate`='0000-00-00 00:00:00' WHERE `OzonUrl`!='';
 
     и на вкладке "Закачка дополнений" нажать "Закачать все" (при очень большом 
-    количестве персоналий процесс может занять около суток)
+    количестве персоналий процесс может занять около суток).

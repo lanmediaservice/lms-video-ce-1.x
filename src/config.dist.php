@@ -492,9 +492,9 @@ $config['short_translation']["Субтитры"] = 'Sub';
  * Настройки отображения ссылок в шаблоне modern
  */
 //какие ссылки пользователь может включать/отключать:
-$config['download']['selectable'] = array('smb'=>true, 'dcpp'=>true, 'ed2k'=>false);
+$config['download']['selectable'] = array('smb'=>true, 'dcpp'=>true, 'ed2k'=>true);
 //установки по-умолчанию
-$config['download']['defaults'] = array('smb'=>false, 'dcpp'=>false);
+$config['download']['defaults'] = array('smb'=>true, 'dcpp'=>true, 'ed2k'=>true);
 //какие плейлисты может выбирать пользователь:
 $config['download']['players']['selectable'] = array('la'=>false, 'mp'=>true, 'mpcpl'=>true, 'bsl'=>true, 'crp'=>true, 'tox'=>true, 'kaf'=>true, 'pls'=>true, 'xspf'=>true);
 //плейлист по-умолчанию:
