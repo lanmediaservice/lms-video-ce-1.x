@@ -31,15 +31,16 @@ $config['customer']['products']['lms_video_1_1'] = "./";
 
 8. Удалить каталог install/
 
-9. Убедится, что скрипт периодического обслуживания индекса поиска, отбора 
-   бестселлеров работает:
-   /app/tasks/batch-daily.php
+9. Убедится, что скрипт периодического обслуживания индекса поиска, отбора бестселлеров работает:
+   /app/tasks/batch-daily.sh или /app/tasks/batch-daily.bat
 
    и добавить его в crontab (Unix):
-   0 5 * * * /path/to/video/app/tasks/batch-daily.php 2>&1 >/dev/null
+   0 5 * * * /path/to/video/app/tasks/batch-daily.sh 2>&1 >/dev/null
 
    или в планировщик Windows (запуск 1 раз в сутки или по желанию):
-   c:\php\php.exe c:\www\video\app\tasks\batch-daily.php
+   c:\www\video\app\tasks\batch-daily.bat
+    
+   Примечание: для Windows в файле php.bat необходимо прописать полный путь к php.exe
 
 10. Для того, чтобы фото персоналий выглядели лучше (в шаблоне modern они 
     увеличены с 60 до 90 пикселей) необходимо перезакачать все персоналии.
