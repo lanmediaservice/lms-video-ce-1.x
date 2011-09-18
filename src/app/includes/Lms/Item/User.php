@@ -78,10 +78,10 @@ class Lms_Item_User
                 return 'user';
                 break;
             case 2: 
-                return 'moderator';
+                return 'moder';
                 break;
             case 5: 
-                return 'moderator';
+                return 'moder';
                 break;
             case 3: 
                 return 'admin';
