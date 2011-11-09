@@ -824,6 +824,7 @@ LMS.Video.UI = {
         var threshold = parseInt(sortedItems[lastBig].count);
         
         var items = data.genres.findAll(function(s){return parseInt(s.count) >= threshold || s.id==self.currentGenre;});
+        items = items.slice(0, this.limitNavigationItems);
         items.unshift(allItem);
         data.genres.unshift(allItem);
         this._fillNavigation(items, $('genres'));
@@ -860,6 +861,7 @@ LMS.Video.UI = {
         var threshold = parseInt(sortedItems[lastBig].count);
         
         var items = data.countries.findAll(function(s){return parseInt(s.count) >= threshold || s.id==self.currentCountry;});
+        items = items.slice(0, this.limitNavigationItems);
         items.unshift(allItem);
         data.countries.unshift(allItem);
         this._fillNavigation(items, $('countries'));
