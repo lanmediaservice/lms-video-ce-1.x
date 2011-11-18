@@ -329,7 +329,7 @@
         opacity:.5;
     }
     
-    .minibutton{
+    .minibutton {
         font-family:helvetica,arial,freesans,clean,sans-serif;
         display:inline-block !important;
         height:23px !important;
@@ -343,6 +343,10 @@
         border:none !important;
         overflow:visible;
         cursor:pointer;
+    }
+    .minibutton a {
+        color:#333;
+        text-decoration: none;
     }
 
     input[type=text]+.minibutton{
@@ -366,6 +370,9 @@
         text-decoration:none;
         text-shadow:-1px -1px 0 rgba(0,0,0,0.3);
         background-position:0 -30px;
+    }
+    .minibutton:hover a {
+        color:#fff;
     }
     .minibutton.danger:hover {
         background-position:0 -90px;
@@ -397,6 +404,7 @@
         background-position: center;
         background-repeat: no-repeat;
     }
+
     .btn-expand .icon {}
     .btn-expand:hover .icon {}
     .btn-collaspse .icon {}

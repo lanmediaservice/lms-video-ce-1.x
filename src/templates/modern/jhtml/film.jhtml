@@ -97,7 +97,7 @@
                             <tr fid="${file.file_id}" class="{if (window.ui.isFileDownloaded(file.file_id))}downloaded{/if}">
                                 <td class="name">${file.name}</td>
                                 {if file.links.download}
-                                    <td><a class="minibutton" onclick="window.action.hitFilm(${film.film_id});window.ui.setFileDownloaded(${file.file_id});" href="${file.links.download|escape}"><span>Скачать (${LMS.Utils.HumanSize(file.size)})</span></a></td>
+                                    <td><span class="minibutton"><span><a onclick="window.action.hitFilm(${film.film_id});window.ui.setFileDownloaded(${file.file_id});" href="${file.links.download|escape}">Скачать (${LMS.Utils.HumanSize(file.size)})</a></span></span></td>
                                 {/if}
                                 {if file.links.license}
                                     <td><a target="_blank" onclick="window.ui.setFileDownloaded(${file.file_id});" class="minibutton" href="${file.links.license|escape}"><span>Скачать (${LMS.Utils.HumanSize(file.size)})</span></a></td>

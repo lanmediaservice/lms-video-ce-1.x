@@ -26,7 +26,7 @@
     //]]>
 </script>
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/reset.css" ?>">
-<link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/content.css" ?>">
+<link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/content.css?v=2" ?>">
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/icons.css" ?>">
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/layout.css?v=2" ?>">
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/form.css" ?>">
