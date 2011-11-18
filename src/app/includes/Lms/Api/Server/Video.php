@@ -549,11 +549,21 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 $files = array();
                 foreach ($rows as $row) {
                     $links = array();
-                    if (Lms_Application::getConfig('ftp_license')){
+                    if (Lms_Application::getConfig('download', 'license')) {
                         $v = Lms_Application::getLeechProtectionCode(array($filmId, $row["file_id"], $user->getId()));
                         $links['license'] = "pl.php?player=ftp&uid=" . $user->getId() . "&filmid=$filmId&fileid=" . $row["file_id"] . "&v=$v";
                     } else {
                         $links['download'] = str_replace(Lms_Application::getConfig('source'), Lms_Application::getConfig('ftp'), $row['path']);
+                        if ($encoding = Lms_Application::getConfig('download', 'escape', 'encoding')) {
+                            $links['download'] = Lms_Translate::translate('CP1251', $encoding, $links['download']);
+                        }
+                        if (Lms_Application::getConfig('download', 'escape', 'enabled')) {
+                            $t = explode("/", $links['download']);
+                            for ($i=3; $i<count($t); $i++) {
+                                $t[$i] = rawurlencode($t[$i]);
+                            }
+                            $links['download'] = implode("/", $t);
+                        }
                     }
                     if ($row['ed2k_link']) {
                         $links['ed2k'] = $row['ed2k_link'];

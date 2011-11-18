@@ -82,3 +82,23 @@ $config['thumbnail']['cache'] = false;
 $config['auth']['1.0']['cookie'] = array(
     'crypt' => false
 );
+
+$encodings = array(
+    "k" => "KOI8-R",
+    "w" => "CP1251",
+    "i" => "ISO-8859-5",
+    "a" => "CP866",
+    "d" => "CP866",
+    "m" => "MacCyrillic",
+);
+
+
+$config['download']['license'] = $config['ftp_license'];
+$config['download']['escape']['enabled'] = true;
+if (isset($_SERVER['HTTP_USER_AGENT'])) {
+    $isIE = preg_match('/MSIE/i', $_SERVER['HTTP_USER_AGENT']) && !preg_match('/(opera|gecko)/i', $_SERVER['HTTP_USER_AGENT']);
+    if ($config['do_not_escape_link_for_ie'] && $isIE) {
+        $config['download']['escape']['enabled'] = false;
+    }
+}
+$config['download']['escape']['encoding'] = isset($config['enc_ftpforclient'])? (isset($encodings[$config['enc_ftpforclient']])? $encodings[$config['enc_ftpforclient']] : $config['enc_ftpforclient']) : false;
