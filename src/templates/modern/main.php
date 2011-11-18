@@ -196,7 +196,7 @@
             </div>
             <div id="links_settings" class="links content" style="display: none">
                 <ul>
-                    <?php if (@$config['download']['selectable']['dcpp']): ?>
+                    <?php if (@$config['download']['selectable']['smb']): ?>
                         <li><label><input type="checkbox" name="links" value="smb"> Просмотр</label></li>
                     <?php endif;?>
                     <?php if (@$config['download']['selectable']['dcpp']): ?>
