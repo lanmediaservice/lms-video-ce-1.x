@@ -48,6 +48,7 @@ window.dhtmlHistory = {
 		/*set user-agent flags*/
 		var UA = navigator.userAgent.toLowerCase();
 		var platform = navigator.platform.toLowerCase();
+		var version = (/version\/([\d\.]+)/i.exec(navigator.userAgent) || [0, 0])[1];
 		var vendor = navigator.vendor || "";
 		if (vendor === "KDE") {
 			this.isKonqueror = true;
@@ -58,7 +59,7 @@ window.dhtmlHistory = {
 		} else if (typeof document.all !== "undefined") {
 			this.isIE = true;
 			this.isSupported = true;
-		} else if (vendor.indexOf("Apple Computer, Inc.") > -1) {
+		} else if (vendor.indexOf("Apple Computer, Inc.") > -1  && version<5) {
 			this.isSafari = true;
 			this.isSupported = (platform.indexOf("mac") > -1);
 		} else if (UA.indexOf("gecko") != -1) {
@@ -384,7 +385,7 @@ window.dhtmlHistory = {
 	getSafariState: function() {
 		var stack = this.getSafariStack();
 		var state = stack[history.length - this.safariHistoryStartPoint - 1];
-		return state;
+		return typeof(state)!='undefined'? state : this.getCurrentHash();
 	},			
 	/*Private: Safari method to write the history stack to a hidden form field*/
 	putSafariState: function(newLocation) {

@@ -44,7 +44,7 @@ $gd_loaded = function_exists('imagecreatefromgif');
 <script language="JavaScript" src="js/scriptaculous/effects.js"></script>
 <script language="JavaScript" src="jshttprequest/JsHttpRequest.js"></script>
 <script language="JavaScript" src="common/jhr_controller.js"></script>
-<script language="JavaScript" src="js/rsh.js?v=2"></script>
+<script language="JavaScript" src="js/rsh.js?v=4"></script>
 <script language="JavaScript" src="js/trimpath/template.js"></script>
 <script language="JavaScript" src="klayers.js"></script>
 <script language="JavaScript" src="strings.js"></script>
