@@ -2214,6 +2214,10 @@ if (isset($config['mysql_set_names'])) mysql_query($config['mysql_set_names']);
     }
 
 </script>
+<?php if (file_exists(dirname(__FILE__) . '/js/admin.js')): ?>
+    <script language="JavaScript" src="js/admin.js"></script>
+<?php endif;?>
+
 <style>
 BODY{
     margin:3px;

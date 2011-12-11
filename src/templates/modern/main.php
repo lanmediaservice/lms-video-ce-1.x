@@ -213,3 +213,8 @@
     <a class="scroll-up" style="display:none" onclick="Effect.ScrollTo($('container'), {duration: 0.15});" title="Наверх"><span class="icon up"></span></a>
     <?php require_once "footer.php"; ?>
 </div>
+<?php
+if (file_exists(dirname(__FILE__) . '/main.after.php')) {
+    include_once(dirname(__FILE__) . '/main.after.php');
+}
+?>

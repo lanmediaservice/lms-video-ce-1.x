@@ -139,3 +139,8 @@
     TEMPLATES.SEARCH = "<?php echo escapeJs(file_get_contents(dirname(__FILE__) . '/jhtml/search.jhtml'));?>";
     //]]>
 </script>
+<?php
+if (file_exists(dirname(__FILE__) . '/head.after.php')) {
+    include_once(dirname(__FILE__) . '/head.after.php');
+}
+?>
