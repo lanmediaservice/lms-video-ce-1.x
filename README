@@ -66,11 +66,22 @@ a) Автоматизированная
 
 Внимание! После установки скрипта его необходимо обновить (см. вкладку "Сервис" -> "Обновления")
 
+Если после установки скрипта и добавления нескольких фильмов в пользовательском интферфейсе 
+в IE 8/9 выдается ошибка "Не удалось завершить действие. Ошибка c00ce56e.",
+то необходимо на сервере указать кодировку. Для Apache:
+
+    AddDefaultCharset windows-1251
+
+Для nginx:
+
+    charset windows-1251;
+
+
 III. Обновление с версии 1.0
     См. файл UPDATING
 
 IV. Документация
-http://docs.lanmediaservice.com/pages.php?id=lms_video_index
+http://www.lanmediaservice.com/products/video/docs
 
 По всем вопросам обращаться:
 WWW:   http://support.lanmediaservice.com/
