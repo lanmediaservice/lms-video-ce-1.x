@@ -314,7 +314,7 @@ $config['connection_timeout'] = 5;
 $config['do_not_escape_link_for_ie'] = 1;
 
 //Настройки для генерации кадров
-//Краткое описание использования возможности генерации кадров http://docs.lanmediaservice.com/index.php/Генерация_кадров_из_фильмов
+//Краткое описание использования возможности генерации кадров http://www.lanmediaservice.com/products/video/docs/85-video-docs-generate
 $config['count_frames'] = 8;       //количество генерируемых кадров, по-умолчанию 8
 $config['escape_style'] = "u";     //стиль экранирования командной строки ("u" -- Unix / "w" -- Windows), по-умолчанию "u"
 $config['small_frame_width'] = 80; //ширина уменьшенного кадра, по-умолчанию 80 пикселов
@@ -359,9 +359,9 @@ $config["covers"]["bigcovers"]["zoom"]     = false; //зарезервировано
 /** 
  * Метод учета кликов на скачивание:
  * 0 (по-умолчанию) - 1 зарегистрированный пользователь + x кликов = 1 скачивание 
- * 1 - x кликов = x скачиваний (не рекомендуется)
+ * 1 - x кликов = x скачиваний (не рекомендуется, режим не совместим с шаблоном modern)
  * 2 - 1 IP-адрес + x кликов = 1 скачивание
- * 3 - 1 сессия + x кликов = 1 скачивание
+ * 3 - 1 сессия + x кликов = 1 скачивание (не рекомендуется, режим не совместим с шаблоном modern)
  */
 $config['hitmethod'] = 0;
 
@@ -472,7 +472,7 @@ $config['ftpfolder_disable'] = false;
 /**
  * Шаблоны для генерации ссылок для поиска фильмов на внешних ресурсах (из Редактора фильмов):
  * Примеры:
- * $config['external_search_engines'][] = '<a href="http://torrents.ru/forum/tracker.php?nm=%s&f[]=-1&o=4" target="_blank"><img border=0 src="http://static.torrents.ru/favicon.ico" align="middle"></a>';
+ * $config['external_search_engines'][] = '<a href="http://rutracker.org/forum/tracker.php?nm=%s&f[]=-1&o=4" target="_blank"><img border=0 src="http://static.rutracker.org/favicon.ico" align="middle"></a>'; 
  * $config['external_search_engines'][] = '<a href="http://kinozal.tv/browse.php?s=%s" target="_blank"><img border=0 src="http://kinozal.tv/favicon.ico" align="middle"></a>';
  */
 
