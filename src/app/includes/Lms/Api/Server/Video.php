@@ -811,6 +811,7 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
     {
         try {
             $db = Lms_Db::get('main');
+            $user = Lms_User::getUser();
             $query = $params['query'];
             
             $words = preg_split('{\s+}i', $query);
@@ -827,7 +828,9 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 }
                 $wheres[] = "(". implode(' OR ', $wheresLike) .")";
                 $wheres[] = "`type` = 'film'";
-                $wheres[] = " f.Hide=0 ";
+                if (!$user->isAllowed("film", "moderate")) {
+                    $wheres[] = " f.Hide=0 ";
+                }
 
                 $sql = "SELECT s.id as film_id, "
                      . "    Name as name, "
@@ -850,7 +853,9 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                     $wheres[] = "$table.`word` LIKE '" . mysql_real_escape_string($word) . "%'";
                     $wheres[] = "$table.`type` = 'film'";
                 }
-                $wheres[] = " f.Hide=0 ";
+                if (!$user->isAllowed("film", "moderate")) {
+                    $wheres[] = " f.Hide=0 ";
+                }
 
                 $sql = "SELECT DISTINCT f.`id` as film_id, "
                      . "    Name as name, "
