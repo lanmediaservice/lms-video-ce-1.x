@@ -3544,7 +3544,7 @@ if (getRights($action,$user) || ($action=="exit")){
                         $newFiles = $storages->directory_list($directory);
                         foreach ($newFiles as $file) {
                             if ($file['isdir']) {
-                                if (preg_match('{^ftp://}',$file['path']) || is_readable($file['path'])) {
+                                if (preg_match('{^ftp://}',$file['path']) || is_readable($file['path_dec'])) {
                                     $checkFiles['directories'][] = $file['path'];
                                 }
                             } else {
