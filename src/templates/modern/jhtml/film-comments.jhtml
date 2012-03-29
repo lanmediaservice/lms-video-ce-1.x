@@ -18,7 +18,7 @@
                     </ul>
                 {/if}
                 <div class="date">
-                    {var date = LMS.Date.datetimeStrToDate(comment.posted_at)}
+                    {var date = LMS.Date.datetimeStrToDate(comment.created_at)}
                     <span title="${date.format('d mmmm yyyy г. HH:MM')}" class="live-datetime" mode="1" time="${Math.round(date.getTime()/1000)}">${LMS.LiveDatetime.dateToStr(date, 1)}</span>
                 </div>
             </div>
@@ -36,7 +36,7 @@
         </div>
     </div>
     <div class="submit-panel">
-        <a class="minibutton" onclick="window.ui.postComment(${film_id});"><span>Отправить</span></a>
+        <a class="minibutton" onclick="window.ui.postComment(${movie_id});"><span>Отправить</span></a>
     </div>
 {else}
     <div class="message">

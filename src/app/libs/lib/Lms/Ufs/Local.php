@@ -57,6 +57,12 @@ class Lms_Ufs_Local
         }
     }
     
+    public function chmod($fileUrl, $mode)
+    {
+        $filePath = self::urlToPath($fileUrl);
+        return chmod($filePath, $mode);
+    }
+    
     public function file_exists($fileUrl)
     {
         $filePath = self::urlToPath($fileUrl);
@@ -233,6 +239,11 @@ class Lms_Ufs_Local
 //            return (('d' == substr(exec("ls -dl ".escapeshellarg($fileUrl)), 0, 1)) ? true : false);
     }
 
+    public function is_readable($fileUrl)
+    {
+        $filePath = self::urlToPath($fileUrl);
+        return is_readable($filePath);
+    }
     
     public function filesize($fileUrl)
     {

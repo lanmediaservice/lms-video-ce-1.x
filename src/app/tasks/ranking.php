@@ -3,47 +3,73 @@
 
 require_once dirname(__FILE__) . '/include/init.php';
 
+$pid = Lms_Pid::getPid(Lms_Application::getConfig('tmp') . '/ranking.pid');
+if ($pid->isRunning()) {
+    exit;
+} 
+
 $db = Lms_Db::get('main');
 
-echo "\nRanking...";
-echo "\nFilms:\n";
-$db->query('UPDATE films SET Rank=1');
-$n = 0; 
-while (true) {
-    $rows = $db->select(
-        'SELECT f.ID as film_id, GREATEST(1, SUM(LEAST(1, ?d/(TO_DAYS(CURDATE()) - TO_DAYS(DateHit) + 1)))) as rank FROM `films` f INNER JOIN hits h ON (f.ID=h.FilmID) GROUP BY f.ID ORDER BY f.ID LIMIT ?d, 1000',
-        7, $n
-    );
-    if (!count($rows)) {
-        break;
-    }
-    echo "..$n..";
-    
-    foreach ($rows as $row) {
-        if ($row['rank']!=1) {
-            $db->query('UPDATE films SET Rank=?d WHERE ID=?d', $row['rank'], $row['film_id']);
+$log = Lms_Item_Log::create('ranking', 'Началось');
+$report = '';
+
+try {
+    echo $m = "\nRanking...";
+    $report .= $m;
+
+    echo $m = "\nMovies:\n";
+    $report .= $m;
+    $log->progress("Ранжирование фильмов");
+
+    $db->query('UPDATE movies SET Rank=1');
+    $n = 0; 
+    while (true) {
+        $rows = $db->select(
+            'SELECT movie_id, GREATEST(1, SUM(LEAST(1, ?d/(TO_DAYS(CURDATE()) - TO_DAYS(h.created_at) + 1)))) as rank FROM `movies` m INNER JOIN hits h USING(movie_id) GROUP BY movie_id ORDER BY movie_id LIMIT ?d, 1000',
+            7, $n
+        );
+        if (!count($rows)) {
+            break;
         }
+        echo $m = "..$n..";
+        $report .= $m;
+
+        foreach ($rows as $row) {
+            if ($row['rank']!=1) {
+                $db->query('UPDATE movies SET rank=?d WHERE movie_id=?d', $row['rank'], $row['movie_id']);
+            }
+        }
+
+        $n += 1000;
     }
 
-    $n += 1000;
-}
+    echo $m = "\nPersons:\n";
+    $report .= $m;
+    $log->progress("Ранжирование персоналий");
 
-echo "\nPersons:\n";
-$n = 0; 
-while (true) {
-    $rows = $db->select('SELECT p.ID as person_id, sum(f.Rank * IF(Role IN(\'режиссер\',\'режиссёр\',\'актер\',\'актриса\'), 1, 0.2)) as rank FROM `persones` p INNER JOIN filmpersones fp ON(p.ID=fp.PersonID) INNER JOIN roles r ON(fp.RoleID=r.ID) INNER JOIN films f ON(fp.FilmID=f.ID) GROUP BY p.ID ORDER BY p.ID LIMIT ?d, 1000', $n);
-    if (!count($rows)) {
-        break;
+    $n = 0; 
+    while (true) {
+        $rows = $db->select('SELECT person_id, sum(m.rank * IF(r.name IN(\'режиссер\',\'режиссёр\',\'актер\',\'актриса\'), 1, 0.2)) as rank FROM `persones` p INNER JOIN participants USING(person_id) INNER JOIN roles r USING(role_id) INNER JOIN movies m USING(movie_id) GROUP BY p.person_id ORDER BY p.person_id LIMIT ?d, 1000', $n);
+        if (!count($rows)) {
+            break;
+        }
+        echo $m = "..$n..";
+        $report .= $m;
+
+        foreach ($rows as $row) {
+            $db->query('UPDATE persones SET rank=?d WHERE person_id=?d', $row['rank'], $row['person_id']);
+        }
+        $n += 1000;
     }
-    echo "..$n..";
+
+    echo $m = "\nDone\n";
+    $report .= $m;
+
+    $log->done(Lms_Item_Log::STATUS_DONE, "Готово", trim($report));
     
-    foreach ($rows as $row) {
-        $db->query('UPDATE persones SET Rank=?d WHERE ID=?d', $row['rank'], $row['person_id']);
-    }
-
-    $n += 1000;
+} catch (Exception $e) {
+    Lms_Debug::crit($e->getMessage());
+    $log->done(Lms_Item_Log::STATUS_ERROR, "Ошибка: " . $e->getMessage(), trim($report));
 }
-
-echo "\nDone\n";
 
 require_once dirname(__FILE__) . '/include/end.php'; 

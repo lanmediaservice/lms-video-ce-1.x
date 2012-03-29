@@ -384,15 +384,21 @@
 
 				equal = (start_pos.width == final_pos.width && start_pos.height == final_pos.height);
 
-				content.fadeTo(currentOpts.changeFade, 0.3, function() {
+                //определение близости пропорций 0 - далеко, 1 - близко
+                var k1 = start_pos.height/start_pos.width;
+                var k2 = final_pos.height/final_pos.width;
+                var p = (k1<k2)? k1/k2 : k2/k1;
+                var o = Math.pow(p, 5); //прозрачность
+
+				content.fadeTo(equal? 0 : currentOpts.changeFade, o, function() {
 					var finish_resizing = function() {
-						content.html( tmp.contents() ).fadeTo(currentOpts.changeFade, 1, _finish);
+						content.empty().html( tmp.contents() ).fadeTo(currentOpts.changeFade, 1, _finish);
 					};
 
 					$.event.trigger('fancybox-change');
 
 					content
-						.empty()
+//						.empty()
 						.removeAttr('filter')
 						.css({
 							'border-width' : currentOpts.padding,
@@ -405,7 +411,6 @@
 
 					} else {
 						fx.prop = 0;
-
 						$(fx).animate({prop: 1}, {
 							 duration : currentOpts.changeSpeed,
 							 easing : currentOpts.easingChange,

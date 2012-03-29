@@ -92,6 +92,9 @@ class Lms_Debug
     // Debug: debug messages
     public static function debug($message) 
     {
+        if (is_array($message)) {
+            $message = print_r($message, true);
+        }
         self::$_logger->debug($message);
     }
     
@@ -106,7 +109,7 @@ class Lms_Debug
         self::$_logger = $logger;
     }
     /**
-     * Инициирует перехватчик системных сообщений
+     * �?нициирует перехватчик системных сообщений
      * @return void
      */
     public static function initErrorHandler()

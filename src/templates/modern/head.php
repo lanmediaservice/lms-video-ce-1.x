@@ -28,7 +28,7 @@
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/reset.css" ?>">
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/content.css?v=2" ?>">
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/icons.css" ?>">
-<link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/layout.css?v=2" ?>">
+<link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/layout.css?v=3" ?>">
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/form.css" ?>">
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/menu.css" ?>">
 <link rel="stylesheet" href="<?php echo "templates/{$config['template']}/css/overlay.css" ?>">
@@ -44,6 +44,7 @@
 <script type="text/javascript" src="js/jquery.plugins/tipsy/jquery.tipsy.js"></script>
 <script>
     $j.fn.tipsy.defaults.opacity = 1;
+    $j.fn.tipsy.defaults.gcInterval = 1000;
 </script>
 
 <script type="text/javascript" src="js/jquery.plugins/jquery.placeholder.min.js"></script>
@@ -87,12 +88,24 @@
     LMS.Connector.connect('userMessage', ui, 'showUserMessage');
     LMS.Connector.connect('highlightElement', ui, 'highlightElement');
     JsHttpRequest.JHRController.SysMessenger = function(text) {
-        ui.showUserError(500, text, 'warn');
+        ui.showUserError(500, text, 'warn', true);
     }
+    JsHttpRequest.JHRController.refresh = function(){
+        if (!this.created) this.create();
+        var el = $j('#' + this.parent_domid);
+        if (el) {
+            if (this.loadings_counter>0) {
+                el.delay(1000).fadeIn(1000);
+            } else{
+                el.clearQueue().hide().css('opacity', 0.7);
+            }
+        }
+    }    
+    
     var router = new LMS.Router(); 
 </script>
 <script language="JavaScript" src="js/LMS/Video/Action.js?v=1.1.6"></script>
-<script language="JavaScript" src="js/LMS/Video/UI.js?v=1.1.10"></script>
+<script language="JavaScript" src="js/LMS/Video/UI.js?v=1.2.3"></script>
 <script type="text/javascript">
     LMS.Action.addMethods(LMS.Video.Action);
     LMS.UI.addMethods(LMS.Video.UI);
@@ -102,9 +115,9 @@
     LMS.Connector.connect('drawCountries', ui, 'drawCountries');
     LMS.Connector.connect('drawLastComments', ui, 'drawLastComments');
     LMS.Connector.connect('drawLastRatings', ui, 'drawLastRatings');
-    LMS.Connector.connect('drawRandomFilm', ui, 'drawRandomFilm');
-    LMS.Connector.connect('drawPopFilms', ui, 'drawPopFilms');
-    LMS.Connector.connect('drawFilm', ui, 'drawFilm');
+    LMS.Connector.connect('drawRandomMovie', ui, 'drawRandomMovie');
+    LMS.Connector.connect('drawPopMovies', ui, 'drawPopMovies');
+    LMS.Connector.connect('drawMovie', ui, 'drawMovie');
     LMS.Connector.connect('drawMoviePerson', ui, 'drawMoviePerson');
     LMS.Connector.connect('drawComments', ui, 'drawComments');
     LMS.Connector.connect('drawSuggestion', ui, 'drawSuggestion');
@@ -119,7 +132,7 @@
 </script>
 <script>
     function Init() {
-        window.ui.init()
+        window.ui.init();
     }    
 </script>
 <script type="text/javascript">

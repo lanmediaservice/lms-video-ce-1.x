@@ -85,7 +85,7 @@ JHRController = function(){
 			for (var i in _t.loadings){
 				if (cur_time > _t.loadings[i]){
 					delete _t.loadings[i];
-					_t.SysMessenger('Превышен таймаут ожидания ответа сервера. Возможно один из последних запросов не был выполнен.');
+					_t.SysMessenger('Превышен таймаут ожидания ответа сервера. Возможно один из последних запросов не был выполнен.', true);
 					_t.loadings_counter--;
 					_t.refresh();
 				}
@@ -106,6 +106,16 @@ JsHttpRequest.query = function(url, content, onready, nocache, timeout) {
 	var query_id = JsHttpRequest.COUNT;
 	gr.JHRController.beginLoad(query_id, timeout);
 	var req = new this();
+        var parentErrorHandler = req._error;
+        req._error = function() {
+            try {
+                parentErrorHandler.apply(req, arguments);
+            } catch (e) {
+                gr.JHRController.SysMessenger(e.toString());
+                gr.JHRController.endLoad(query_id);
+                throw e;
+            }
+        };
 	req.caching = !nocache;
 	req.onreadystatechange = function() {
 		if (req.readyState == 4) {

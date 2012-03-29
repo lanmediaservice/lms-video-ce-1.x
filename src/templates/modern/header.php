@@ -1,4 +1,5 @@
 <div style="display:none" id="user_message"></div>
+<div id="JHRControllerLoaderBox" style="display: none"><img src="<?php echo "templates/{$config['template']}";?>/img/wait.gif"></div>
 <?php //include_once dirname(__FILE__) . "/misc/help01.php"; ?>
 <header>
     <div class="menu">
@@ -7,7 +8,7 @@
                 <li><strong><?php echo $_SESSION['login'];?></strong></li>
                 <li><a href='#/settings'>Настройки</a></li>
                 <?php if (getRights("admin_view",$user)): ?>
-                    <li><a href="admin.php">Панель управления</a></li>
+                    <li><a href="cp/">Панель управления</a></li>
                 <?php endif; ?>
                 <?php //<li><a id="get_help" href="#help">Справка</a></li> ?>
                 <li><a href='javascript:Exit();'>Выход</a></li>

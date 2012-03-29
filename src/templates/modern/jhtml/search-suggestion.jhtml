@@ -1,9 +1,9 @@
-{for film in films}
-    <a href="#/movie/id/${film.film_id}" class="cover">
-        <img src="${film.cover}">
+{for movie in movies}
+    <a href="#/movie/id/${movie.movie_id}" class="cover">
+        <img src="${movie.cover}">
         <div class="suggestionlabel">
-            <span class="title">${film.name}</span>
-            <div class="detail">${film.international_name} (${film.year})</div>
+            <span class="title">${movie.name}</span>
+            <div class="detail">${movie.international_name} (${movie.year})</div>
         </div>
     </a>
 {/for}

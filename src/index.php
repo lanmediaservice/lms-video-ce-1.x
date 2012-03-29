@@ -74,8 +74,6 @@ $gd_loaded = function_exists('imagecreatefromgif');
     var SITE_URL = "<?php echo $config['siteurl']; ?>";
     var SITE_TITLE = "<?php echo isset($config['sitetitle']) ? $config['sitetitle'] : "Видео-каталог"; ?>";
 
-    var RESULT_ON_PAGE = <?php echo $config['resultonpage']; ?>;
-
     var FIXED_WIDTH_POSTER = <?php echo ($gd_loaded) ? 0 : (isset($config["covers"]["defaultcovers"]["width"]) ? $config["covers"]["defaultcovers"]["width"] : 160); ?>;
 
     var RIGHTS_SETBOOKMARK = <?php echo getRights("setbookmark",$user); ?>;

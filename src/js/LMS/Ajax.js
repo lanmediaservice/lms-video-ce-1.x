@@ -9,13 +9,13 @@ JSAN.require('LMS.Signalable');
 
 LMS.Ajax = Class.create(LMS.Signalable, {
     items: null,
-    lastAddTime: 0,
     apiUrl: 'api.php',
+    timer: null,
     initialize: function($super)
     {
         this.items = [];
-        var self = this;
-        new PeriodicalExecuter(function(){self.ajaxQueriesExec()}, 0.1);
+        //var self = this;
+        //new PeriodicalExecuter(function(){self.ajaxQueriesExec()}, 0.05);
         $super();
     },
     setApiUrl: function(url)
@@ -45,7 +45,7 @@ LMS.Ajax = Class.create(LMS.Signalable, {
     ajaxQueriesExec: function ()
     {
         var time = new Date().getTime();
-        if (this.items.length && ((time-this.lastAddTime)>0)) {
+        if (this.items.length) {
             var params = {};
             var commands = [];
             for (var i = 0; i<this.items.length; i++) {
@@ -77,8 +77,14 @@ LMS.Ajax = Class.create(LMS.Signalable, {
     },
     exec: function(requestParams, callback)
     {
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
+
         this.items.push({requestParams: requestParams, callback:callback});
-        this.lastAddTime = new Date().getTime();
+        
+        var self = this;
+        this.timer = setTimeout(function(){self.ajaxQueriesExec()}, 10);
     }
 
 });

@@ -16,7 +16,7 @@ class Lms_Pid {
                 $workers = 0;
                 foreach ($lines as $line) {
                     $pid = (int) trim($line);
-                    if (posix_kill($pid, 0)) {
+                    if (self::checkPid($pid)) {
                         $workers++;
                         $this->pids[] = $pid;
                     }
@@ -42,7 +42,7 @@ class Lms_Pid {
             $newLines = array();
             foreach ($lines as $line) {
                 $pid = (int) trim($line);
-                if ($pid!=getmypid() && posix_kill($pid, 0)) {
+                if ($pid!=getmypid() && self::checkPid($pid)) {
                     $newLines[] = $line;
                 }
             }
@@ -63,4 +63,22 @@ class Lms_Pid {
     {
         return new self($file, $maxWorkers);
     }
+    
+    public static function checkPid($pid)
+    {
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            static $processes = false;
+            if (!$processes) {
+                $processes = explode("\n", shell_exec("tasklist.exe"));
+            }
+            foreach( $processes as $process ) {
+                if (preg_match('{^(.*)\s+' . $pid . '}', $process)) {
+                    return true; 
+                }
+            }
+        } else {
+            return posix_kill($pid, 0);
+        }
+    }
+    
 }

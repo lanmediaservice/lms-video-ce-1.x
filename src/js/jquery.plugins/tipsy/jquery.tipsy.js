@@ -8,12 +8,51 @@
     function maybeCall(thing, ctx) {
         return (typeof thing == 'function') ? (thing.call(ctx)) : thing;
     };
-    
+
+    // CAUTION the current implementation does not allow for tipsied elements to stay out of DOM (in between events)
+    // i.e. don't remove, store, then re-insert tipsied elements (and why would you want to do that anyway?)
+    var garbageCollect = (function() {
+        var currentInterval = 1000;
+        var to = null;
+        var tipsies = [];
+
+        function _do() {
+            for (var i = 0; i < tipsies.length;) {
+                var t = tipsies[i];
+                // FIXME? the 2nd (non-paranoid) check is from the link below, it should be replaced if a better way is found
+                // http://stackoverflow.com/questions/4040715/check-if-cached-jquery-object-is-still-in-dom
+                if (t.options.gcInterval == 0 || t.$element.closest('body').length == 0) {
+                    t.hoverState = 'out';
+                    t.hide();
+                    tipsies.splice(i,1);
+                } else {
+                    i++
+                }
+            }
+        }
+        function _loop() {
+            to = setTimeout(function() { _do(); _loop(); }, currentInterval);
+        }
+
+        return function(t) {
+            if (t.options.gcInterval == 0) return;
+
+            if (to && t.options.gcInterval < currentInterval) {
+                clearTimeout(to); to = null;
+                currentInterval = t.options.gcInterval;
+            }
+            tipsies.push(t);
+            if (!to) _loop();
+        };
+    })();
+
     function Tipsy(element, options) {
         this.$element = $(element);
         this.options = options;
         this.enabled = true;
         this.fixTitle();
+
+        garbageCollect(this);
     };
     
     Tipsy.prototype = {
@@ -24,7 +63,7 @@
                 
                 $tip.find('.tipsy-inner')[this.options.html ? 'html' : 'text'](title);
                 $tip[0].className = 'tipsy'; // reset classname in case of dynamic gravity
-                $tip.remove().css({top: 0, left: 0, visibility: 'hidden', display: 'block'}).appendTo(document.body);
+                $tip.remove().css({top: 0, left: 0, visibility: 'hidden', display: 'block'}).prependTo(document.body);
                 
                 var pos = $.extend({}, this.$element.offset(), {
                     width: this.$element[0].offsetWidth,
@@ -166,8 +205,8 @@
         if (!options.live) this.each(function() { get(this); });
         
         if (options.trigger != 'manual') {
-            var binder   = options.live ? 'live' : 'bind',
-                eventIn  = options.trigger == 'hover' ? 'mouseenter' : 'focus',
+            var binder = options.live ? 'live' : 'bind',
+                eventIn = options.trigger == 'hover' ? 'mouseenter' : 'focus',
                 eventOut = options.trigger == 'hover' ? 'mouseleave' : 'blur';
             this[binder](eventIn, enter)[binder](eventOut, leave);
         }
@@ -182,6 +221,7 @@
         delayOut: 0,
         fade: false,
         fallback: '',
+        gcInterval: 0,
         gravity: 'n',
         html: false,
         live: false,
@@ -208,34 +248,34 @@
     };
     
     /**
-     * yields a closure of the supplied parameters, producing a function that takes
-     * no arguments and is suitable for use as an autogravity function like so:
-     *
-     * @param margin (int) - distance from the viewable region edge that an
-     *        element should be before setting its tooltip's gravity to be away
-     *        from that edge.
-     * @param prefer (string, e.g. 'n', 'sw', 'w') - the direction to prefer
-     *        if there are no viewable region edges effecting the tooltip's
-     *        gravity. It will try to vary from this minimally, for example,
-     *        if 'sw' is preferred and an element is near the right viewable 
-     *        region edge, but not the top edge, it will set the gravity for
-     *        that element's tooltip to be 'se', preserving the southern
-     *        component.
-     */
+* yields a closure of the supplied parameters, producing a function that takes
+* no arguments and is suitable for use as an autogravity function like so:
+*
+* @param margin (int) - distance from the viewable region edge that an
+* element should be before setting its tooltip's gravity to be away
+* from that edge.
+* @param prefer (string, e.g. 'n', 'sw', 'w') - the direction to prefer
+* if there are no viewable region edges effecting the tooltip's
+* gravity. It will try to vary from this minimally, for example,
+* if 'sw' is preferred and an element is near the right viewable
+* region edge, but not the top edge, it will set the gravity for
+* that element's tooltip to be 'se', preserving the southern
+* component.
+*/
      $.fn.tipsy.autoBounds = function(margin, prefer) {
-		return function() {
-			var dir = {ns: prefer[0], ew: (prefer.length > 1 ? prefer[1] : false)},
-			    boundTop = $(document).scrollTop() + margin,
-			    boundLeft = $(document).scrollLeft() + margin,
-			    $this = $(this);
+return function() {
+var dir = {ns: prefer[0], ew: (prefer.length > 1 ? prefer[1] : false)},
+boundTop = $(document).scrollTop() + margin,
+boundLeft = $(document).scrollLeft() + margin,
+$this = $(this);
 
-			if ($this.offset().top < boundTop) dir.ns = 'n';
-			if ($this.offset().left < boundLeft) dir.ew = 'w';
-			if ($(window).width() + $(document).scrollLeft() - $this.offset().left < margin) dir.ew = 'e';
-			if ($(window).height() + $(document).scrollTop() - $this.offset().top < margin) dir.ns = 's';
+if ($this.offset().top < boundTop) dir.ns = 'n';
+if ($this.offset().left < boundLeft) dir.ew = 'w';
+if ($(window).width() + $(document).scrollLeft() - $this.offset().left < margin) dir.ew = 'e';
+if ($(window).height() + $(document).scrollTop() - $this.offset().top < margin) dir.ns = 's';
 
-			return dir.ns + (dir.ew ? dir.ew : '');
-		}
-	};
+return dir.ns + (dir.ew ? dir.ew : '');
+}
+};
     
 })(jQuery);

@@ -8,7 +8,7 @@ CREATE TABLE `bestsellers` (
   `films` text NOT NULL,
   `rank` int(11) NOT NULL,
   PRIMARY KEY (`category_id`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 
 CREATE TABLE `search_trigrams` (
   `trigram` char(3) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE `search_trigrams` (
   `id` int(11) NOT NULL,
   KEY `trigram` (`trigram`,`type`),
   KEY `type` (`type`,`id`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 
 CREATE TABLE `suggestion` (
   `suggestion_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -26,13 +26,13 @@ CREATE TABLE `suggestion` (
   PRIMARY KEY (`suggestion_id`),
   UNIQUE KEY `word_2` (`word`,`type`,`id`),
   KEY `word` (`word`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 
 CREATE TABLE `suggestion_cache` (
   `query` varchar(255) NOT NULL,
   `result` text NOT NULL,
   PRIMARY KEY (`query`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 
 
 ALTER TABLE `filmgenres` ADD INDEX (`FilmID`);

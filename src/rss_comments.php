@@ -1,60 +1,76 @@
 <?php 
 header("Content-type: text/xml");
-require_once "config.php";
 
-$idSQLConnection = mysql_connect($config['mysqlhost'], $config['mysqluser'], $config['mysqlpass']);
+define('SKIP_DEBUG_CONSOLE', true);
 
-if ( !$idSQLConnection )
-{
-	echo "Критическая ошибка на сервере. Ошибка при подключении к базе данных.";
-	exit;
-}
+require_once dirname(__FILE__) . "/app/config.php";
 
-$result = mysql_select_db( $config['mysqldb'], $idSQLConnection );
-if ( !$result )
-{
-	echo "Критическая ошибка на сервере. Ошибка при выборе базы данных.";
-	exit;
-} 
-if (isset($config['mysql_set_names'])) mysql_query($config['mysql_set_names']);
+Lms_Application::setRequest();
+Lms_Application::prepareApi();
+Lms_Debug::debug('Request URI: ' . $_SERVER['REQUEST_URI']);
 
-	$l = isset($config['rss']['count']) ? $config['rss']['count'] : 10;
-	$title = isset($config['rss']['title']) ? $config['rss']['title'] : "Видео-каталог";
-	$title .= ": Последние отзывы";
-	echo "<?xml version=\"1.0\" encoding=\"windows-1251\"?>"
-	."\n<rss version=\"2.0\" \nxmlns:content=\"http://purl.org/rss/1.0/modules/content/\">"
-	."\n<channel>"
-	."\n<title>$title</title>"
-	."\n<link>{$config['siteurl']}</link>"
-	."\n<description>Последние отзывы</description>"
-	."\n<language>ru</language>"
-	."\n<pubDate>".date("r")."</pubDate>";
-
-$where = "WHERE (ISNULL(ToUserID) OR ToUserID=0) ";
-$where .= " AND films.Hide=0 ";
-$sql = "SELECT FilmID as ID, films.Name as Name, films.OriginalName as OriginalName, films.Year,  users.Login as Login, Date, Text, comments.ID as CommentID FROM comments LEFT JOIN films ON (films.ID = comments.FilmID) LEFT JOIN users ON (users.ID = comments.UserID) $where ORDER BY comments.Date DESC LIMIT 0,20";
-$result = mysql_query($sql);
-while ($result && $field = mysql_fetch_assoc($result)){
-	$id = $field["ID"];
-
-	$field["Text"] = preg_replace("/(\r\n|\n|\r)/","<br/>",$field["Text"]);
-    $title = "{$field['Name']} / {$field['OriginalName']} ({$field['Year']})";
-    $maxPreviewLength = @$config['rss_max_preview_length']? $config['rss_max_preview_length'] : 120;
-    $previewLength = $maxPreviewLength - strlen($title);
-    $previewText = trim(strip_tags($field["Text"]));
-    if (strlen($previewText)>$previewLength) $previewText = substr($previewText, 0, $previewLength) . "...";
-	echo "\n<item>"
-	."\n<title>" . htmlspecialchars($title) . ($previewText? htmlspecialchars(" - $previewText") : "" ) . "</title>"
-    ."\n<author>" . htmlspecialchars($field['Login']) . "</author>"
-	."\n<link>{$config['siteurl']}/#film:{$field['ID']}:0:1</link>"
-	."\n<description>{$field['Login']}: ".htmlspecialchars($field["Text"])."</description>"
-	."\n<content:encoded><![CDATA["
-	."<div style='font-family: Tahoma, Verdana, Geneva, Arial, Helvetica, sans-serif; font-size: 8pt;'><b>{$field['Login']} комментирует {$field['Name']} / {$field['OriginalName']} ({$field['Year']}):</b><br>" . $field["Text"] . "</div>"
-	."]]></content:encoded>"
-	."\n<pubDate>".date("r",strtotime($field['Date']))."</pubDate>"
-	."\n<guid>{$config['siteurl']}/#film:{$field['ID']}:0:1:{$field['CommentID']}</guid>"
-	."\n</item>";
-}
+$limit = Lms_Application::getConfig('rss','count')? : 40;
+$title = Lms_Application::getConfig('rss','title')?: "Видео-каталог";
+$title .= ": Последние отзывы";
 ?>
-  </channel>
+<?php echo '<?xml version="1.0" encoding="windows-1251"?>'; ?>
+
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title><?php echo $title ?></title>
+        <link><?php echo Lms_Application::getConfig('siteurl'); ?></link>
+        <description>Последние отзывы</description>
+        <language>ru</language>
+        <pubDate><?php echo date("r"); ?></pubDate>
+
+        <?php
+
+            try {
+                $db = Lms_Db::get('main');
+                $wheres = array();
+                $wheres[] = "(ISNULL(to_user_id) OR to_user_id=0)";
+                $wheres[] = " m.hidden=0 ";
+                $sql = "SELECT m.movie_id, m.name, m.international_name, m.year, users.Login as user_name, c.created_at, c.`text`, c.comment_id "
+                        . "FROM comments c INNER JOIN movies_comments USING(comment_id) INNER JOIN movies m USING(movie_id) INNER JOIN users ON(c.user_id=users.ID) "
+                        . "WHERE (ISNULL(to_user_id) OR to_user_id=0) AND m.hidden=0 "
+                        . "ORDER BY c.created_at DESC LIMIT ?d";
+
+                $comments = $db->select(
+                    $sql, $limit
+                );
+                foreach ($comments as $comment):
+                    $text = Lms_Text::htmlizeText($comment['text']);
+                    $title = $comment['name'];
+                    $title .= $comment['international_name']? " / {$comment['international_name']}" :'';
+                    $title .= " ({$comment['year']})";
+                    $maxPreviewLength = Lms_Application::getConfig('rss', 'max_preview_length')?: 120;
+                    $previewLength = $maxPreviewLength - strlen($title);
+                    $previewText = trim(strip_tags($comment["text"]));
+                    if (strlen($previewText)>$previewLength) {
+                        $previewText = substr($previewText, 0, $previewLength) . "...";
+                    } ?>
+                    <item>
+                        <title><?php echo $title . ($previewText? htmlspecialchars(" - $previewText") : "" ); ?></title>
+                        <author><?php $comment['user_name']; ?></author>
+                        <link><?php echo rtrim(Lms_Application::getConfig('siteurl'), '/') . "/#movie/id/{$comment['movie_id']}/page/comments"; ?></link>
+                        <description><?php echo $comment['user_name'] . ": " . strip_tags($text); ?></description>
+                        <content:encoded><![CDATA[
+                            <div style='font-family: Tahoma, Verdana, Geneva, Arial, Helvetica, sans-serif; font-size: 8pt;'>
+                                <b><?php echo $comment['user_name']; ?> комментирует <?php echo $title; ?>:</b><br>
+                                <?php echo $text; ?>
+                            </div>
+                        ]]></content:encoded>
+                        <pubDate><?php echo date("r", strtotime($comment['created_at']));?> </pubDate>
+                        <guid><?php echo rtrim(Lms_Application::getConfig('siteurl'), '/') . "/#movie/id/{$comment['movie_id']}/page/comments/" . $comment['comment_id']; ?></guid>
+                    </item>
+                <?php endforeach;
+            } catch (Exception $e) {
+                Lms_Debug::err($e->getMessage());
+            }
+        ?>
+    </channel>
 </rss>
+
+<?php 
+    Lms_Application::close();
+?>

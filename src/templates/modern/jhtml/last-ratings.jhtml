@@ -4,14 +4,14 @@
 </div>
 <div class="inside-body">
     <table><tbody>
-    {for film in films}
-        {if film.film_id}
+    {for movie in movies}
+        {if movie.movie_id}
             <tr>
-                <td>${parseInt(film_index)+1}.</td>
+                <td>${parseInt(movie_index)+1}.</td>
                 <td>
-                    <a href="#/movie/id/${film.film_id}">${film.name|escape}</a>
+                    <a href="#/movie/id/${movie.movie_id}">${movie.name|escape}</a>
                 </td>
-                <td class="rating">${film.rating}</td>
+                <td class="rating">${movie.rating}</td>
             </tr>
         {/if}
     {/for} 

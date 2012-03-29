@@ -1,7 +1,7 @@
 <div class="person">
     <div class="photo">
         {for photo in person.photos}
-            <img src="${photo}">
+            <a href="${photo.original}" rel="fancybox-person-${person.person_id}"><img src="${photo.thumbnail}"></a>
         {/for}
     </div>
     
@@ -12,7 +12,7 @@
         ${person.international_name} 
     </div>
     <div class="info">
-        ${person.description}
+        ${person.info}
         {if person.url}
             <br> 
             <a class="link minibutton" target="_blank" href="${person.url}"><span>Подробности на ${person.url.match(/http:\/\/(?:www\.)?([^\/]+)/)[1]}</span></a>
@@ -20,13 +20,13 @@
     </div>
     <br style="clear: both;">
     <div class="movies">
-        {for film in person.films}
+        {for movie in person.movies}
             <div class="movie-row">
-                <a href="#/movie/id/${film.film_id}">
-                    ${film.name} {if film.year} (${film.year}){/if}
+                <a href="#/movie/id/${movie.movie_id}">
+                    ${movie.name} {if movie.year} (${movie.year}){/if}
                 </a>
                 <span class="roles">
-                    (${film.roles.join(', ')})
+                    (${movie.roles.join(', ')})
                 </span>
             </div>
         {/for}

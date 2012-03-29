@@ -582,4 +582,297 @@ class Lms_Text {
     {
         return "\n<span onclick=\"this.parentNode.select('.quote-text').invoke('toggle');\" class=\"toggle-quote\">&mdash; ĞŸĞ¾ĞºĞ°Ğ·Ğ°Ñ‚ÑŒ/ÑĞºÑ€Ñ‹Ñ‚ÑŒ Ñ†Ğ¸Ñ‚Ğ¸Ñ€ÑƒĞµĞ¼Ñ‹Ğ¹ Ñ‚ĞµĞºÑÑ‚ &mdash;</span><span class=\"quote-text\" style=\"display:none\">{$matches[0]}</span>";
     }
+    
+    public static function translit($text)
+    {
+        static $tr = array("¥" => "G", "¨" => "YO", "ª" => "E", "¯" => "YI", "²" => "I",
+	"³" => "i", "´" => "g", "¸" => "yo", "¹" => "#", "º" => "e",
+	"¿" => "yi", "À" => "A", "Á" => "B", "Â" => "V", "Ã" => "G",
+	"Ä" => "D", "Å" => "E", "Æ" => "ZH", "Ç" => "Z", "È" => "I",
+	"É" => "Y", "Ê" => "K", "Ë" => "L", "Ì" => "M", "Í" => "N",
+	"Î" => "O", "Ï" => "P", "Ğ" => "R", "Ñ" => "S", "Ò" => "T",
+	"Ó" => "U", "Ô" => "F", "Õ" => "H", "Ö" => "TS", "×" => "CH",
+	"Ø" => "SH", "Ù" => "SCH", "Ú" => "'", "Û" => "YI", "Ü" => "",
+	"İ" => "E", "Ş" => "YU", "ß" => "YA", "à" => "a", "á" => "b",
+	"â" => "v", "ã" => "g", "ä" => "d", "å" => "e", "æ" => "zh",
+	"ç" => "z", "è" => "i", "é" => "y", "ê" => "k", "ë" => "l",
+	"ì" => "m", "í" => "n", "î" => "o", "ï" => "p", "ğ" => "r",
+	"ñ" => "s", "ò" => "t", "ó" => "u", "ô" => "f", "õ" => "h",
+	"ö" => "ts", "÷" => "ch", "ø" => "sh", "ù" => "sch", "ú" => "'",
+	"û" => "yi", "ü" => "", "ı" => "e", "ş" => "yu", "ÿ" => "ya"
+	);
+	return strtr($text, $tr);
+    }
+    
+    public static function safeFilename($filename, $webSafe = true, $lowerCase = true)
+    {
+        $filename = preg_replace('{[\|/\?\*:;\-"\'\{\}\\\]}', '_', $filename); 
+        if ($webSafe) {
+            $filename = self::translit($filename);
+            $filename = preg_replace('{[\s\(\)!%&#]}', '_', $filename); 
+            if ($lowerCase) {
+                $filename = strtolower($filename);
+            }
+        }
+        $filename = trim($filename, '_ ');
+        $filename = preg_replace('{[_]+}', '_', $filename); 
+        
+        return $filename;
+    }
+    
+    /**
+     * Àëãîğèòì äåòğàíñëèòåğàöèè âçÿò ñ http://www.translit.ru/
+     * 
+     * @staticvar null $tra
+     * @staticvar null $abc2
+     * @param type $txt
+     * @return string 
+     */
+    private static function detranslitSymbol($txt)
+    {
+        static $tra = null;
+        static $abc2 = null;
+        if (!$tra || !$abc2) {
+            $tra = array();
+            $abc2 = array();
+
+            $tra['a'] = array('û+','É+','Û+','é+','Û','é','û','É','','');
+            $abc2['a'] = array('ûà','Éà','Ûà','éà','ß','ÿ','ÿ','ß','à','a');
+
+            $tra['b'] = array('','');
+            $abc2['b'] = array('á','b');
+
+            $tra['v'] = array('','');
+            $abc2['v'] = array('â','v');
+
+            $tra['g'] = array('','');
+            $abc2['g'] = array('ã','g');
+
+            $tra['d'] = array('','');
+            $abc2['d'] = array('ä','d');
+
+            $tra['e'] = array('É+','é+','É','é','','');
+            $abc2['e'] = array('Éå','éå','İ','ı','å','e');
+
+            $tra['o'] = array('û+','É+','Û+','é+','Û','û','É','é','','');
+            $abc2['o'] = array('ûî','Éî','Ûî','éî','¨','¸','¨','¸','î','o');
+
+            $tra['?'] = array('','');
+            $abc2['?'] = array('¸','?');
+
+            $tra['h'] = array('ñö', 'ñõ+','Ñõ+','ç+','Ñõ','ñ+','ø+','Ö+','Ø+','Ñ+','ñõ','ö+','Ç+','Ø','ñ','ö','ø','Ç','Ñ','Ö','ç','','');
+            $abc2['h'] = array('ù', 'ñõõ','Ñõõ','çõ','Ù','ñõ','øõ','Öõ','Øõ','Ñõ','ù','öõ','Çõ','Ù','ø','÷','ù','Æ','Ø','×','æ','õ','h');
+
+            $tra['z'] = array('','');
+            $abc2['z'] = array('ç','z');
+
+            $tra['i'] = array('û','','');
+            $abc2['i'] = array('ûé','è','i');
+
+            $tra['j'] = array('','');
+            $abc2['j'] = array('é','j');
+
+            $tra['k'] = array('','');
+            $abc2['k'] = array('ê','k');
+
+            $tra['l'] = array('','');
+            $abc2['l'] = array('ë','l');
+
+            $tra['m'] = array('','');
+            $abc2['m'] = array('ì','m');
+
+            $tra['n'] = array('','');
+            $abc2['n'] = array('í','n');
+
+            $tra['p'] = array('','');
+            $abc2['p'] = array('ï','p');
+
+            $tra['r'] = array('','');
+            $abc2['r'] = array('ğ','r');
+
+            $tra['s'] = array('','');
+            $abc2['s'] = array('ñ','s');
+
+            $tra['t'] = array('','');
+            $abc2['t'] = array('ò','t');
+
+            $tra['u'] = array('û+','É+','Û+','é+','Û','é','û','É','','');
+            $abc2['u'] = array('ûó','Éó','Ûó','éó','Ş','ş','ş','Ş','ó','u');
+
+            $tra['f'] = array('','');
+            $abc2['f'] = array('ô','f');
+
+            $tra['x'] = array('','');
+            $abc2['x'] = array('õ','x');
+
+            $tra['c'] = array('','');
+            $abc2['c'] = array('ö','c');
+
+            $tra['w'] = array('','');
+            $abc2['w'] = array('ù','w');
+
+            $tra['#'] = array('ú+','ú','','');
+            $abc2['#'] = array('úú','Ú','ú','#');
+
+            $tra['y'] = array('è','','');
+            $abc2['y'] = array('ûé','û','y');
+
+            $tra['\''] = array('ü+','ü','','');
+            $abc2['\''] = array('üü','Ü','ü','\'');
+
+            $tra['?'] = array('','');
+            $abc2['?'] = array('ı','?');
+
+            $tra['?'] = array('','');
+            $abc2['?'] = array('ş','?');
+
+            $tra['q'] = array('','');
+            $abc2['q'] = array('ÿ','q');
+
+            $tra['A'] = array('Û+','É+','Û','É','','');
+            $abc2['A'] = array('ÛÀ','ÉÀ','ß','ß','À','A');
+
+            $tra['B'] = array('','');
+            $abc2['B'] = array('Á','B');
+
+            $tra['V'] = array('','');
+            $abc2['V'] = array('Â','V');
+
+            $tra['G'] = array('','');
+            $abc2['G'] = array('Ã','G');
+
+            $tra['D'] = array('','');
+            $abc2['D'] = array('Ä','D');
+
+            $tra['E'] = array('É+','É','','');
+            $abc2['E'] = array('ÉÅ','İ','Å','E');
+
+            $tra['O'] = array('Û+','É+','Û','É','','');
+            $abc2['O'] = array('ÛÎ','ÉÎ','¨','¨','Î','O');
+
+            $tra['?'] = array('','');
+            $abc2['?'] = array('¨','?');
+
+            $tra['H'] = array('ÑÕ+','Ö+','ÑÕ','Ñ+','Ç+','Ø+','Ø','Ö','Ñ','Ç','','');
+            $abc2['H'] = array('ÑÕÕ','ÖÕ','Ù','ÑÕ','ÇÕ','ØÕ','Ù','×','Ø','Æ','Õ','H');
+
+            $tra['Z'] = array('','');
+            $abc2['Z'] = array('Ç','Z');
+
+            $tra['I'] = array('','');
+            $abc2['I'] = array('È','I');
+
+            $tra['J'] = array('','');
+            $abc2['J'] = array('É','J');
+
+            $tra['K'] = array('','');
+            $abc2['K'] = array('Ê','K');
+
+            $tra['L'] = array('','');
+            $abc2['L'] = array('Ë','L');
+
+            $tra['M'] = array('','');
+            $abc2['M'] = array('Ì','M');
+
+            $tra['N'] = array('','');
+            $abc2['N'] = array('Í','N');
+
+            $tra['P'] = array('','');
+            $abc2['P'] = array('Ï','P');
+
+            $tra['R'] = array('','');
+            $abc2['R'] = array('Ğ','R');
+
+            $tra['S'] = array('','');
+            $abc2['S'] = array('Ñ','S');
+
+            $tra['T'] = array('','');
+            $abc2['T'] = array('Ò','T');
+
+            $tra['U'] = array('Û+','É+','Û','É','','');
+            $abc2['U'] = array('ÛÓ','ÉÓ','Ş','Ş','Ó','U');
+
+            $tra['F'] = array('','');
+            $abc2['F'] = array('Ô','F');
+
+            $tra['X'] = array('','');
+            $abc2['X'] = array('Õ','X');
+
+            $tra['C'] = array('','');
+            $abc2['C'] = array('Ö','C');
+
+            $tra['W'] = array('','');
+            $abc2['W'] = array('Ù','W');
+
+            $tra['Y'] = array('','');
+            $abc2['Y'] = array('Û','Y');
+
+            $tra['?'] = array('','');
+            $abc2['?'] = array('İ','?');
+
+            $tra['?'] = array('','');
+            $abc2['?'] = array('Ş','?');
+
+            $tra['Q'] = array('','');
+            $abc2['Q'] = array('ß','Q');
+        }
+         
+        $pretxt = substr($txt, 0, strlen($txt)-1);
+        $last = substr($txt, strlen($txt)-1, 1);
+        $lat = @$tra[$last];
+        $rus = @$abc2[$last];
+        if ($lat) {
+            for ($ii=0; $ii<count($lat); $ii++) {
+                $pos = (strlen($pretxt) > strlen($lat[$ii]))? (strlen($pretxt) - strlen($lat[$ii])) : 0;
+                if ($lat[$ii]==substr($pretxt, $pos, strlen($pretxt) - $pos)) {
+                    return substr($pretxt, 0, strlen($pretxt) - strlen($lat[$ii])) . $rus[$ii];
+                }
+            }
+        }
+        return $txt;
+    }
+    
+    
+    public static function detranslit($latinText)
+    {
+        $cyrText = "";
+	for ($i=0; $i < strlen($latinText); $i++) {
+            $cyrText = self::detranslitSymbol($cyrText . substr($latinText, $i, 1));		
+	}
+	return $cyrText;        
+    }
+    
+    public static function testText($text, $freqIndex)
+    {
+        if (strlen($text)<3) {
+            return 1;
+        }
+        $text = strtolower($text);
+        $ngrams = array();
+        $textLength = Lms_Text::length($text);
+        for ($i=0; $i<=$textLength-3; $i++) {
+            $ngram = substr($text, $i, 3);
+            $ngrams[] = $ngram;
+        }
+        for ($i=0; $i<=$textLength-4; $i++) {
+            $ngram = substr($text, $i, 4);
+            $ngrams[] = $ngram;
+        }
+        $value = 0;
+        foreach ($ngrams as $ngram) {
+            if (array_key_exists($ngram, $freqIndex)) {
+                $value += pow($freqIndex[$ngram], 1/strlen($ngram));
+            }
+        }
+        return $value;
+    }
+    
+    public static function autoDetranslit($text, $freqIndex)
+    {
+        $detranslitedText = Lms_Text::detranslit($text);
+        $en = Lms_Text::testText($text, $freqIndex);
+        $ru = Lms_Text::testText($detranslitedText, $freqIndex);
+        return ($ru>$en)? $detranslitedText : $text;
+        
+    }    
 }

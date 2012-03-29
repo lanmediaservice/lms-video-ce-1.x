@@ -53,6 +53,13 @@ class Lms_Thumbnail {
         Lms_Timers::start('getimagesize');
         
         $imageSize = getimagesize($path);
+        
+        if (!$imageSize[0] || !$imageSize[1]) {
+            if (self::$errorImagePath) {
+                $path = self::$errorImagePath;
+                $imageSize = getimagesize($path);
+            }
+        }
         $imageX    = $imageSize[0];
         $imageY    = $imageSize[1];
         $imageType = $imageSize[2];
@@ -152,6 +159,12 @@ class Lms_Thumbnail {
         return $url;*/
     }
 
+    static public function proxyUrl($url)
+    {
+        return self::thumbnail($url, $width, $height, 0, false, false, false, false);
+    }
+    
+    
     static public function setThumbnailScript($script, $key)
     {
         self::$thumbnailScript = $script;

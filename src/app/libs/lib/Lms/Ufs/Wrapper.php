@@ -665,6 +665,16 @@ class Lms_Ufs_Wrapper extends Lms_Modular
         }
     }
     
+    public function is_readable($fileUrl)
+    {
+        $decodedFileUrl = $this->decodeUrl($fileUrl);
+
+        if ($fs = $this->_getPlugin($decodedFileUrl)) {
+            return $fs->is_readable($decodedFileUrl);
+        }
+    }
+    
+    
     public function unlink($fileUrl)
     {
         $decodedFileUrl = $this->decodeUrl($fileUrl);

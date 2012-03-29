@@ -10,17 +10,15 @@
     <?php endif; ?>
     <p>
         <?php
-        $itemFilter = isset($config['item_filter'])? $config['item_filter'] : '';
-        $itemFilterWhere = $itemFilter? " AND $itemFilter " : '';
-        $result = mysql_query("SELECT count(*) FROM films WHERE Hide=0 $itemFilterWhere");
+        $result = mysql_query("SELECT count(*) FROM movies WHERE hidden=0");
         $field = mysql_fetch_row($result);
-        $result2 = mysql_query("SELECT sum(Size) FROM films INNER JOIN files ON(files.FilmID = films.ID) WHERE Hide=0 $itemFilterWhere");
+        $result2 = mysql_query("SELECT sum(`size`) FROM movies INNER JOIN movies_files USING(movie_id) INNER JOIN files USING(file_id) WHERE hidden=0");
         $field2 = mysql_fetch_row($result2);
         echo "Статистика: кол-во: ".$field[0]." (".round($field2[0]/1024/1024/1024)." ГБ, <a target='_blank' href='film_list.php'>полный список</a>) ";
-        $result = mysql_query("SELECT count(*) FROM comments INNER JOIN films ON (comments.FilmID=films.ID) WHERE Hide=0 $itemFilterWhere");
+        $result = mysql_query("SELECT count(*) FROM comments INNER JOIN movies_comments USING(comment_id) INNER JOIN movies USING(movie_id) WHERE hidden=0");
         $field = mysql_fetch_row($result);
         echo " | отзывов: ".$field[0]. " <a target='_blank' href='rss_comments.php'><img style='border:0;position:relative;top:2px;' src='templates/{$config['template']}/img/rss-orange.gif'></a>";
-        $result = mysql_query("SELECT count(*) FROM userfilmratings INNER JOIN films ON (userfilmratings.FilmID=films.ID) WHERE Hide=0 $itemFilterWhere");
+        $result = mysql_query("SELECT count(*) FROM movies_users_ratings INNER JOIN movies USING(movie_id) WHERE hidden=0");
         $field = mysql_fetch_row($result);
         echo " | оценок: ".$field[0];
         ?>

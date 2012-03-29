@@ -214,12 +214,14 @@ class Lms_Ufs
      */
     static private function _getEncodingByResource($resource)
     {
-        foreach (self::$res as $module => $items) {
-            foreach ($items as $config) {
+        $hash = self::getHashByResource($resource);
+        foreach (self::$res as $items) {
+            return $items[$hash]['encoding'];
+/*            foreach ($items as $config) {
                 if($resource == $config['resource']) {
                     return $config['encoding'];
                 }
-            }
+            }*/
         } 
         return false;
     }
@@ -321,7 +323,7 @@ class Lms_Ufs
      */
     static public function setInternalEncoding($encoding)
     {
-        self::$encoding = $encoding;
+        self::$internalEncoding = $encoding;
     }
     
     /**
@@ -362,6 +364,18 @@ class Lms_Ufs
     }
     
     /**
+     * wrapper for chmod
+     *
+     * @param string $file
+     * @param int $mode
+     * @return bool
+     */
+    static public function chmod($file, $mode)
+    {
+         return self::_execute('chmod', $file, $mode);
+    }
+    
+    /**
      * wrapper for file_exists 
      *
      * @param string $fileUrl
@@ -369,7 +383,7 @@ class Lms_Ufs
      */
     static public function file_exists($fileUrl)
     {
-        	return self::_execute('file_exists', $fileUrl);
+        return self::_execute('file_exists', $fileUrl);
     }
     
     /**
@@ -382,7 +396,7 @@ class Lms_Ufs
     {
         $encodedDirUrl = self::encodeUrl($dirUrl);
         $className     = self::_getClassNameByUri($encodedDirUrl);
-        $handler       = call_user_func_array(array($className, 'opendir'), array($dirUrl));
+        $handler       = call_user_func_array(array($className, 'opendir'), array($encodedDirUrl));
         self::_toResCache($handler, $className, self::getEncoding($dirUrl));
         return $handler;
     }
@@ -572,9 +586,8 @@ class Lms_Ufs
      */
     static public function closedir($resource)
     {
-            
-        self::_performOperation('closedir', $resource);
         self::_delResCache($resource);
+        self::_performOperation('closedir', $resource);
         return true;
         
     }
@@ -587,8 +600,8 @@ class Lms_Ufs
      */
     static public function fclose($resource)
     {
-        self::_performOperation('fclose', $resource);
         self::_delResCache($resource);
+        self::_performOperation('fclose', $resource);
         return true;
     }
     
@@ -648,7 +661,7 @@ class Lms_Ufs
     {
         return self::_execute('is_dir', $fileUrl);
     }
-
+    
     /**
      * wrpapper for is_file
      *
@@ -658,6 +671,17 @@ class Lms_Ufs
     static public function is_file($fileUrl)
     {
      	return self::_execute('is_file', $fileUrl);
+    }
+
+    /**
+     * wrapper for is_dir
+     *
+     * @param string $fileUrl
+     * @return bool
+     */
+    static public function is_readable($fileUrl)
+    {
+        return self::_execute('is_readable', $fileUrl);
     }
     
     /**
@@ -699,11 +723,10 @@ class Lms_Ufs
      */
     static private function _getClassByResource($resource)
     {
+        $hash = self::getHashByResource($resource);
         foreach (self::$res as $module => $items) {
-            foreach ($items as $config) {
-                if($resource == $config['resource']) {
-                    return $module;
-                }
+            if (!empty($items[$hash])) {
+                return $module;
             }
         } 
         return false;
@@ -716,11 +739,10 @@ class Lms_Ufs
     */
     static private function _delResCache($resource)
     {
-      foreach (self::$res as $module => $items) {
-            foreach ($items as &$config) {
-                if($resource == $config['resource']) {
-                    unset($config);
-                }
+        $hash = self::getHashByResource($resource);
+        foreach (self::$res as &$items) {
+            if (!empty($items[$hash])) {
+                unset($items[$hash]);
             }
         } 
     }
@@ -734,7 +756,12 @@ class Lms_Ufs
      */
     static private function _toResCache($resource, $module, $encoding)
     {
-        self::$res[$module][] = array("resource" => $resource, "encoding" => $encoding);
+        $hash = self::getHashByResource($resource);
+        self::$res[$module][$hash] = array("encoding" => $encoding);
+    }
+    
+    private static function getHashByResource($resource) {
+        return get_resource_type($resource) . ":" . (string)(int)$resource;
     }
     
     /**

@@ -31,9 +31,9 @@ LMS.Video.UI = {
     mainWrapperInited: false,
     tabs: {},
     level2: 'catalog',
-    bookmarks: {films:[]},
+    bookmarks: {movies:[]},
     recentlyViewed: [],
-    currentFilmId: null,
+    currentMovieId: null,
     links: {},
     init: function()
     {
@@ -51,7 +51,7 @@ LMS.Video.UI = {
         LMS.Connector.connect('routeCatalog', this, 'routeCatalog');
         LMS.Connector.connect('routeDefault', this, 'routeBestsellers');
         LMS.Connector.connect('routeSettings', this, 'routeSettings');
-        LMS.Connector.connect('routeMovie', this, 'routeFilm');
+        LMS.Connector.connect('routeMovie', this, 'routeMovie');
         LMS.Connector.connect('routePerson', this, 'routePerson');
         LMS.Connector.connect('routeBestsellers', this, 'routeBestsellers');
         LMS.Connector.connect('routeSearch', this, 'routeSearch');
@@ -64,7 +64,7 @@ LMS.Video.UI = {
         
         var matches = window.location.hash.match(/#film:(\d+)/);
         if (matches) {
-            window.location.hash = '/movie/id/' + matches[1];
+            window.location.hash = '/movies/id/' + matches[1];
         }
         if (window.location.hash.match(/#page:/)) {
             window.location.hash = '';
@@ -82,8 +82,8 @@ LMS.Video.UI = {
     {
         this.initPaginator()
         this.initNavigator();
-        window.action.getRandomFilm();
-        window.action.getPopFilms();
+        window.action.getRandomMovie();
+        window.action.getPopMovies();
         window.action.getLastComments();
         window.action.getLastRatings();
         this.catalogInited = true;
@@ -140,23 +140,23 @@ LMS.Video.UI = {
         }
     },
 
-    routeFilm: function(params)
+    routeMovie: function(params)
     {
         this.tabs.movie.hash = window.location.hash.substring(1);
-        var filmId = params.id;
+        var movieId = params.id;
         var page = params.page? params.page : 'overview';
-        if (filmId == this.currentFilmId) {
+        if (movieId == this.currentMovieId) {
             this.gotoTab('movie');
             switch (page) {
                 case 'comments':
-                    this.showFilmComments(filmId);
+                    this.showMovieComments(movieId);
                     break;
                 case 'overview':
                 default:
-                    this.showFilmOverview();
+                    this.showMovieOverview();
             }
         } else {
-            window.action.getFilm(params.id, page);
+            window.action.getMovie(params.id, page);
         }
     },
 
@@ -392,7 +392,7 @@ LMS.Video.UI = {
             for (var i=0; i<childNodes.length; i++) {
                 wrapper.appendChild(childNodes[i]);
             }
-            var mid = data.films[0].film_id;
+            var mid = data.movies[0].movie_id;
             var firstItem = Element.select(wrapper, '.item[mid=' + mid + ']')[0];
             var page = {
                 offset: parseInt(data.offset),
@@ -435,18 +435,18 @@ LMS.Video.UI = {
         $j('#last_ratings [title]').tipsy({delayIn: 200});
     },
 
-    drawRandomFilm: function(data)
+    drawRandomMovie: function(data)
     {
         $j('.tipsy').remove();
-        $('random_film').innerHTML = TEMPLATES.RANDOM_FILM.process(data);
-        $j('#random_film [title]').tipsy({delayIn: 200});
+        $('random_movie').innerHTML = TEMPLATES.RANDOM_FILM.process(data);
+        $j('#random_movie [title]').tipsy({delayIn: 200});
     },
 
-    drawPopFilms: function(data)
+    drawPopMovies: function(data)
     {
         $j('.tipsy').remove();
-        $('pop_films').innerHTML = TEMPLATES.POP_FILMS.process(data);
-        $j('#pop_films [title]').tipsy({delayIn: 200});
+        $('pop_movies').innerHTML = TEMPLATES.POP_FILMS.process(data);
+        $j('#pop_movies [title]').tipsy({delayIn: 200});
     },
 
     drawBestsellers: function(data)
@@ -476,17 +476,19 @@ LMS.Video.UI = {
         this.gotoTab('person');
         var title = data.person.name? data.person.name : data.person.international_name;
         this.setTitle(title);
-        this.setFavicon(data.person.photos[0]);
+        this.setFavicon(data.person.photos[0]? data.person.photos[0].thumbnail : false);
 
         this.tabs.person.name = title;
         $('person_wrapper').innerHTML = TEMPLATES.PERSON.process(data);
-
+        
+        this.imageViewer($j('#person_wrapper a[rel^="fancybox"]'));
+        
         var name = data.person.name? data.person.name : data.person.international_name;
         this.addRecentlyViewedItem(name, router.url('person', {id: data.person.person_id}));
         this.updateBreadcrumb();
     },
     
-    drawFilm: function(data, page)
+    drawMovie: function(data, page)
     {
         this.gotoTab('movie');
         window.scrollTo(0,0);
@@ -504,58 +506,51 @@ LMS.Video.UI = {
                 }
             });
         }
+        var self = this;
         setTimeout(function() {
             $j('.persones-wrapper .defer').removeClass('defer');
-            var transitionIn = $j.browser.opera? 'none' : 'elastic';
-            var transitionOut = $j.browser.opera? 'none' : 'elastic';
-            $j("#movie_wrapper a[rel^='fancybox']").fancybox({
-                'easingIn': 'easeOutBack',
-                'easingOut': 'easeInBack',
-                'cyclic': true,
-                'overlayColor' : '#000',
-                'overlayOpacity': 0.85,
-                'transitionIn': transitionIn,
-                'transitionOut': transitionOut,
-                'changeFade': 0, 
-                'padding': 0
-            });
+            self.imageViewer($j("#movie_wrapper a[rel^='fancybox']"));
         }, 500);
-        var title = data.film.name;
-        if (data.film.international_name) {
-            title += " / " + data.film.international_name;
+
+        this.slideFrames(0);
+
+        var title = data.movie.name;
+        if (data.movie.international_name) {
+            title += " / " + data.movie.international_name;
         }
-        if (data.film.international_name) {
-            title += " / " + data.film.year;
+        if (data.movie.international_name) {
+            title += " / " + data.movie.year;
         }
         this.setTitle(title);
-        this.setFavicon(data.film.cover);
+        this.setFavicon(data.movie.covers[0].thumbnail);
             
-        this.tabs.movie.name = data.film.name;
+        this.tabs.movie.name = data.movie.name;
         
-        var filmId = data.film.film_id;
-        var name = '${name} {if year} (${year}){/if}'.process(data.film);
-        this.addRecentlyViewedItem(name, router.url('movie', {id: filmId}));
+        var movieId = data.movie.movie_id;
+        var name = '${name} {if year} (${year}){/if}'.process(data.movie);
+        this.addRecentlyViewedItem(name, router.url('movie', {id: movieId}));
         this.updateBreadcrumb();
         if ([2,3,5].indexOf(USER_GROUP)!=-1) {
-            $j('#movie_moder_edit_button').attr('href', 'admin.php?film=' + filmId);
-            $j('#quality_select').unbind('change').val(data.film.quality).change(function(){
-                window.action.setFilmField(filmId, 'Quality', $j(this).val());
+            $j('#movie_moder_edit_button').attr('href', 'cp/#/movies/id/' + movieId);
+            $j('#quality_select').unbind('change').val(data.movie.quality).change(function(){
+                window.action.setMovieField(movieId, 'quality', $j(this).val());
             });;
-            $j('#translate_select').unbind('change').val(data.film.translation).change(function(){
-                window.action.setFilmField(filmId, 'Translation', $j(this).val());
+            $j('#translate_select').unbind('change').val(data.movie.translation[0]).change(function(){
+                window.action.setMovieField(movieId, 'translation/0', $j(this).val());
             });
         }
-        $j('#movie_wrapper [rel!="fancybox"][title]').tipsy({delayIn: 200, html: true});
+        $j('#movie_wrapper :not([rel^="fancybox"])[title]').tipsy({delayIn: 200, html: true});
         
         switch (page) {
             case 'comments':
-                this.showFilmComments(filmId);
+                this.showMovieComments(movieId);
                 break;
             case 'overview':
             default:
-                this.showFilmOverview();
+                this.showMovieOverview();
         }
-        this.currentFilmId = filmId;
+        
+        this.currentMovieId = movieId;
     },
 
     drawComments: function(data)
@@ -563,22 +558,22 @@ LMS.Video.UI = {
         $('movie_comments').innerHTML = TEMPLATES.FILM_COMMENTS.process(data);
     },
 
-    showFilmOverview: function()
+    showMovieOverview: function()
     {
         $j('#movie .tabset li').removeClass('active');
-        $j('#movie .tabset li.film-overview').addClass('active');
+        $j('#movie .tabset li.movie-overview').addClass('active');
         $j('#movie .tabset-body').hide();
-        $j('#movie .tabset-body.film-overview').show();
+        $j('#movie .tabset-body.movie-overview').show();
     },
 
-    showFilmComments: function(filmId)
+    showMovieComments: function(movieId)
     {
         $j('#movie .tabset li').removeClass('active');
-        $j('#movie .tabset li.film-comments').addClass('active');
+        $j('#movie .tabset li.movie-comments').addClass('active');
         $j('#movie .tabset-body').hide();
-        $j('#movie .tabset-body.film-comments').show();
+        $j('#movie .tabset-body.movie-comments').show();
         if (!$j('#movie_comments').html().strip()) {
-            window.action.getComments(filmId);
+            window.action.getComments(movieId);
         }
     },
     
@@ -593,6 +588,8 @@ LMS.Video.UI = {
         var personesUl = $$('#movie .persones')[0];
         var scrollLeft =  personLi.positionedOffset().left - (personesUl.getWidth() - personLi.getWidth())/2;
         $j(personesUl).animate({scrollLeft: scrollLeft}, 'fast')
+        
+        this.imageViewer($j('#movie div.person-detail a[rel^="fancybox"]'));
     },
 
     personPreviewClickHandler: function (personId, element, index)
@@ -733,23 +730,23 @@ LMS.Video.UI = {
         $j('#bookmarks .bookmark-action[title]').tipsy({delayIn: 200});
     },
     
-    unstarBookmark: function(filmId)
+    unstarBookmark: function(movieId)
     {
-        $j('#bookmarks li[mid=' + filmId + ']').remove();
-        $j('.bookmark[mid=' + filmId + ']').removeClass('on').attr("title", "Добавить в закладки");
-        var i = this.getBookmarkIndex(filmId);
-        this.bookmarks.films.splice(i, 1);
+        $j('#bookmarks li[mid=' + movieId + ']').remove();
+        $j('.bookmark[mid=' + movieId + ']').removeClass('on').attr("title", "Добавить в закладки");
+        var i = this.getBookmarkIndex(movieId);
+        this.bookmarks.movies.splice(i, 1);
     },
 
-    starBookmark: function(filmId)
+    starBookmark: function(movieId)
     {
-        $j('.bookmark[mid=' + filmId + ']').addClass('on').attr("title", "Удалить закладку");
+        $j('.bookmark[mid=' + movieId + ']').addClass('on').attr("title", "Удалить закладку");
     },
 
-    getBookmarkIndex: function(filmId)
+    getBookmarkIndex: function(movieId)
     {
-        for (var i=0; i<this.bookmarks.films.length; i++) {
-            if (this.bookmarks.films[i]['film_id']==filmId) {
+        for (var i=0; i<this.bookmarks.movies.length; i++) {
+            if (this.bookmarks.movies[i]['movie_id']==movieId) {
                 return i;
                 break;
             }
@@ -757,17 +754,17 @@ LMS.Video.UI = {
         return -1;
     },
 
-    bookmarkExists: function(filmId)
+    bookmarkExists: function(movieId)
     {
-        return (this.getBookmarkIndex(filmId)!=-1)? true : false;
+        return (this.getBookmarkIndex(movieId)!=-1)? true : false;
     },
     
-    toogleBookmark: function(filmId)
+    toogleBookmark: function(movieId)
     {
-        if (this.bookmarkExists(filmId)) {
-            window.action.deleteBookmark(filmId);
+        if (this.bookmarkExists(movieId)) {
+            window.action.deleteBookmark(movieId);
         } else {
-            window.action.addBookmark(filmId);
+            window.action.addBookmark(movieId);
         }
     },
 
@@ -1308,7 +1305,7 @@ LMS.Video.UI = {
     
     drawSuggestion: function(data)
     {
-        if ((data.films.length || data.persones.length) && data.query==$j('#search_query').val()) {
+        if ((data.movies.length || data.persones.length) && data.query==$j('#search_query').val()) {
             this.lastSuggestionQuery = data.query;
             $('search_suggestion').innerHTML = TEMPLATES.SEARCH_SUGGESTION.process(data);
             $('search_suggestion').show();
@@ -1358,8 +1355,8 @@ LMS.Video.UI = {
     {
         var w = 100*(value/10) + '%';
         $j('#local_rating .inner').width(w);
-        $j('#local_rating .value').text(value);
-        $j('#local_rating .starbar').attr('title', "Локальный рейтинг: " + value + " (" + count + " голосов)");
+        $j('#local_rating .value').text(parseFloat(value).toFixed(1));
+        $j('#local_rating .starbar').attr('title', "Локальный рейтинг: " + parseFloat(value).toFixed(1) + " (" + count + " голосов)");
         if (parseFloat(value)) {
             $j('#local_rating').show();
         } else {
@@ -1394,10 +1391,10 @@ LMS.Video.UI = {
         this._setLocalRating(data.rating_local_value, data.rating_local_count);
     },
     
-    postComment: function(filmId)
+    postComment: function(movieId)
     {
         var text = $('comment_text').value;
-        window.action.postComment(filmId, text);
+        window.action.postComment(movieId, text);
     },
     
     beginEditComment: function (commentId)
@@ -1529,7 +1526,7 @@ LMS.Video.UI = {
     {
         var vp = $j('#videoplayer_settings input[name="videoplayer"]:checked').val();
         $j.Storage.set("videoplayer", vp);
-        this.emit('userMessage', 'Настройки сохранены');
+        this.emit('userMessage', 'Настройки сохранены', true);
         $j.fancybox.close();
         $j('#movie_wrapper a[rel="videoplayer"]').unbind('click.fb').each(function() {
             var href = $j(this).attr('href');
@@ -1554,7 +1551,7 @@ LMS.Video.UI = {
             links[type] = $j(this).is(':checked');
         });
         $j.Storage.set("links", JSON.stringify(links));
-        this.emit('userMessage', 'Настройки сохранены');
+        this.emit('userMessage', 'Настройки сохранены', true);
     },
     
     loadLinksSettings: function()
@@ -1575,6 +1572,84 @@ LMS.Video.UI = {
         var links = $j.Storage.get("links");
         links = links? JSON.parse(links) : {};
         return (!Object.isUndefined(links[type]))? links[type] : SETTINGS.DOWNLOAD_DEFAULTS[type];
+    },
+    
+    imageViewer: function(elements)
+    {
+        var transitionIn = $j.browser.opera? 'none' : 'elastic';
+        var transitionOut = $j.browser.opera? 'none' : 'elastic';
+        var changeFade = $j.browser.opera? 0 : 50;
+        var changeSpeed = $j.browser.opera? 0 : 100;
+        elements.fancybox({
+            'easingIn': 'easeOutBack',
+            'easingOut': 'easeInBack',
+            'cyclic': true,
+            'overlayColor' : '#000',
+            'overlayOpacity': 0.85,
+            'transitionIn': transitionIn,
+            'transitionOut': transitionOut,
+            'changeFade': changeFade, 
+            'changeSpeed': changeSpeed, 
+            'padding': 0,
+            'type': 'image'
+        });
+    },
+    
+    slideCover: function(num)
+    {
+        var width = $j('#movie_wrapper ul.covers li').width();
+        var height = $j('#movie_wrapper ul.covers li:nth-child(' + (num+1)+ ') img').height();
+        var marginLeft = - num * width;
+        $j('#movie_wrapper ul.covers').css('marginLeft', marginLeft);
+        $j('#movie_wrapper div.covers-wrapper').height(height);
+        
+        $j('#movie_wrapper ul.covers-nav a').removeClass('active');
+        $j('#movie_wrapper ul.covers-nav li:nth-child(' + (num+1)+ ') a').addClass('active');
+        
+    },
+    
+    slideFrames: function(num) {
+        num = parseInt(num);
+        if (num>=0) {
+            var slider = $j('#movie_wrapper ul.frames-slider > li');
+            var max = slider.length - 1;
+            if (num > max) {
+                num = max;
+            }
+            
+            if (num == max) {
+                $j('#movie_wrapper .frames-slider-nav .next').attr('data-index', '');
+            } else {
+                $j('#movie_wrapper .frames-slider-nav .next').attr('data-index', num + 1);
+            }
+
+            if (num <= 0) {
+                $j('#movie_wrapper .frames-slider-nav .prev').attr('data-index', '');
+            } else {
+                $j('#movie_wrapper .frames-slider-nav .prev').attr('data-index', num - 1);
+            }
+            var ul = slider.eq(num).find('ul');
+            var filename = ul.attr('data-filename');
+            $j('#movie_wrapper .frames-slider-nav .filename').html(filename);
+            
+            ul.find('img[data-original]').each(function(){
+                var img = $j(this);
+                var src = img.attr('data-original');
+                img.attr('src', src)
+                   .removeAttr('data-original');
+            });
+            
+            var width = 720;
+            var marginLeft = - num * width;
+            $j('#movie_wrapper ul.frames-slider').css('marginLeft', marginLeft);
+        }
+    },
+    
+    hitMovie: function(movieId) 
+    {
+        setTimeout(function(){
+            window.action.hitMovie(movieId);
+        }, 1000);
     }
     
 };

@@ -95,7 +95,8 @@
                     <ul id="sort_wrapper" class="right" style="display:none">
                         <li><a onclick="window.ui.setOrder(0)" data-order="0" data-dir="desc" data-short-text="Последние">по дате добавления</a></li>
                         <li><a onclick="window.ui.setOrder(1)" data-order="1" data-dir="desc" data-short-text="Новинки">по году выпуска</a></li>
-                        <li><a onclick="window.ui.setOrder(2)" data-order="2" data-dir="desc" data-short-text="Лучшие (IMDB)">по рейтингу imdb.com</a></li>
+                        <li><a onclick="window.ui.setOrder(2)" data-order="2" data-dir="desc" data-short-text="Лучшие (IMDb)">по рейтингу IMDb</a></li>
+                        <li><a onclick="window.ui.setOrder(9)" data-order="9" data-dir="desc" data-short-text="Лучшие (KinoPoisk)">по рейтингу KinoPoisk</a></li>
                         <li><a onclick="window.ui.setOrder(3)" data-order="3" data-dir="desc" data-short-text="Лучшие (локально)">по локальному рейтингу</a></li>
                         <li><a onclick="window.ui.setOrder(4)" data-order="4" data-dir="desc" data-short-text="Лучшие (мои)">по персональному рейтингу</a></li>
                         <li><a onclick="window.ui.setOrder(8)" data-order="8" data-dir="desc" data-short-text="В центре внимания">по относительной популярности</a></li>
@@ -126,8 +127,8 @@
         </div>
         <div id="main_wrapper" class="wrapper">
             <div class="sidebar a">
-                <div id="random_film" class="inside random-film"></div>
-                <div id="pop_films" class="inside"></div>
+                <div id="random_movie" class="inside random-movie"></div>
+                <div id="pop_movies" class="inside"></div>
                 <div id="last_comments" class="inside"></div>
                 <div id="last_ratings" class="inside"></div>
             </div>  

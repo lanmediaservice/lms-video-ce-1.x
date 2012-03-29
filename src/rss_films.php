@@ -1,79 +1,92 @@
 <?php 
 header("Content-type: text/xml");
-require_once "config.php";
 
-$idSQLConnection = mysql_connect($config['mysqlhost'], $config['mysqluser'], $config['mysqlpass']);
+define('SKIP_DEBUG_CONSOLE', true);
 
-if ( !$idSQLConnection )
-{
-	echo "Критическая ошибка на сервере. Ошибка при подключении к базе данных.";
-	exit;
-}
+require_once dirname(__FILE__) . "/app/config.php";
 
-$result = mysql_select_db( $config['mysqldb'], $idSQLConnection );
-if ( !$result )
-{
-	echo "Критическая ошибка на сервере. Ошибка при выборе базы данных.";
-	exit;
-} 
-if (isset($config['mysql_set_names'])) mysql_query($config['mysql_set_names']);
+Lms_Application::setRequest();
+Lms_Application::prepareApi();
+Lms_Debug::debug('Request URI: ' . $_SERVER['REQUEST_URI']);
 
-	$l = isset($config['rss']['count']) ? $config['rss']['count'] : 10;
-	$title = isset($config['rss']['title']) ? $config['rss']['title'] : "Видео-каталог";
-	echo "<?xml version=\"1.0\" encoding=\"windows-1251\"?>"
-	."\n<rss version=\"2.0\" \nxmlns:content=\"http://purl.org/rss/1.0/modules/content/\">"
-	."\n<channel>"
-	."\n<title>$title</title>"
-	."\n<link>{$config['siteurl']}</link>"
-	."\n<description>Последние поступления</description>"
-	."\n<language>ru</language>"
-	."\n<pubDate>".date("r")."</pubDate>";
+$limit = Lms_Application::getConfig('rss','count')? : 40;
+$title = Lms_Application::getConfig('rss','title')?: "Видео-каталог";
 
-$result = mysql_query("select * from films where hide=0 order by CreateDate DESC LIMIT 0,10");
-$i = 0;
-while ($field=mysql_fetch_assoc($result)){
-	$id = $field["ID"];
-	$result2 = mysql_query("SELECT Name FROM filmgenres LEFT JOIN genres ON (genres.ID = filmgenres.GenreID) WHERE filmgenres.FilmID={$field['ID']}");
-	$genres = array();
-	while ($result2 && $field2 = mysql_fetch_assoc($result2)){
-		$genres[] = $field2["Name"];
-	}
-	$result2 = mysql_query("SELECT Name FROM filmcountries LEFT JOIN countries ON (countries.ID = filmcountries.CountryID) WHERE filmcountries.FilmID={$field['ID']}");
-	$countries = array();
-	while ($result2 && $field2 = mysql_fetch_assoc($result2)){
-		$countries[] = $field2["Name"];
-	}
-	$sgenres = implode(" / ", $genres);
-	$scountries = implode(" / ", $countries);
-	$director = "";
-	$actors = array();
-	$result2 = mysql_query("SELECT persones.RusName as RusName, persones.OriginalName as OriginalName, roles.Role as Role, roles.SortOrder as SortOrder FROM filmpersones LEFT JOIN roles ON (roles.ID = filmpersones.RoleID) LEFT JOIN persones ON (persones.ID = filmpersones.PersonID) WHERE filmpersones.FilmID=$id ORDER BY SortOrder");
-	while ($result2 && $field2 = mysql_fetch_assoc($result2)){
-		if ($field2["Role"]=="режиссер") $director = strlen(trim($field2["RusName"])) ? $field2["RusName"] : (($field2["OriginalName"])?$field2["OriginalName"]:"");
-		if (in_array($field2["Role"],array("актер","актриса"))) $actors[] = ($field2["RusName"]) ? $field2["RusName"] : $field2["OriginalName"];
-		if (count($actors)>4) break;
-	}
-	$actors = implode(", ", $actors);
-
-	$field['Poster'] = preg_split("(\r\n|\r|\n)",$field['Poster']);
-
-	echo "\n<item>"
-	."\n<title>".htmlspecialchars("{$field['Name']} / {$field['OriginalName']} ({$field['Year']})")."</title>"
-	."\n<link>{$config['siteurl']}/#film:{$field['ID']}:1:0</link>"
-	."\n<description>".$sgenres." - ".$scountries . "</description>"
-	."\n<content:encoded><![CDATA["
-	."\n<table style='font-family: Tahoma, Verdana, Geneva, Arial, Helvetica, sans-serif; font-size: 8pt;'><tr><td valign='top'><img src='" . ((!preg_match("/^http:\/\//",$field['Poster'][0])) ? $config['siteurl']."/" : "") . $field['Poster'][0]. "'></td><td valign='top'>" 
-	."\n<b>Жанр:</b> " . $sgenres." <br/>" 
-	."\n<b>Страна:</b> " . $scountries." <br/>" 
-	."\n<b>Режиссер:</b> " . $director." <br/>" 
-	."\n<b>В ролях:</b> " . $actors." <br/>"
-	. (($field["ImdbRating"]>0) ? "\n<img src='{$config['siteurl']}/images/imdb.gif'> " . round($field["ImdbRating"]/10,1) ." <br/>" : "")
-	."\n<b>От издателя:</b> " .$field['Description'] . "</td></tr></table>"
-	."]]></content:encoded>"
-	."\n<pubDate>".date("r",strtotime($field['CreateDate']))."</pubDate>"
-	."\n<guid>{$config['siteurl']}/#film:{$field['ID']}:1:0</guid>"
-	."\n</item>";
-}
+$url = "http://" . $_SERVER['HTTP_HOST'];
 ?>
-  </channel>
+<?php echo '<?xml version="1.0" encoding="windows-1251"?>'; ?>
+
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title><?php echo $title ?></title>
+        <link><?php echo Lms_Application::getConfig('siteurl'); ?></link>
+        <description>Последние поступления</description>
+        <language>ru</language>
+        <pubDate><?php echo date("r"); ?></pubDate>
+
+        <?php
+
+            try {
+                
+                $result = Lms_Api_Server_Video::getCatalog(array('size'=>$limit));
+                $response = $result->getResponse();
+                $movies = $response['movies'];
+                
+                $moviesIds = array();
+                foreach ($movies as $movie) {
+                    $moviesIds[] = $movie['movie_id'];
+                }
+                
+                $db = Lms_Db::get('main');
+                $descriptions = $db->selectCol('SELECT movie_id AS ARRAY_KEY, description FROM movies WHERE movie_id IN(?a)', $moviesIds);
+                
+                foreach ($movies as $movie):
+                    $cover = ((!preg_match("{^http://}", $movie['cover']))? $url : '') . $movie['cover'];
+                    $title = $movie['name'];
+                    $title .= $movie['international_name']? " / {$movie['international_name']}" :'';
+                    $title .= " ({$movie['year']})"; ?>
+                    <item>
+                        <title><?php echo $title; ?></title>
+                        <link><?php echo rtrim(Lms_Application::getConfig('siteurl'), '/') . "/#movie/id/{$movie['movie_id']}"; ?></link>
+                        <description><?php echo implode(" / ", $movie['genres']?: array()); ?> (<?php echo implode(" / ", $movie['countries']?: array()); ?>)</description>
+                        <content:encoded><![CDATA[
+                            <table style='font-family: Tahoma, Verdana, Geneva, Arial, Helvetica, sans-serif; font-size: 8pt;'>
+                                <tr>
+                                    <td valign='top'>
+                                        <img src="<?php echo $cover;?>">
+                                    </td>
+                                    <td valign='top'>
+                                        <b>Жанр:</b> <?php echo implode(" / ", $movie['genres']); ?> <br/>
+                                        <?php if (isset($movie['countries'])):?>
+                                            <b>Страна:</b> <?php echo implode(" / ", $movie['countries']); ?> <br/>
+                                        <?php endif; ?>
+                                        <?php if (isset($movie['directors'])):?>
+                                            <b>Режиссер:</b> <?php echo implode(", ", array_slice($movie['directors'], 0, 2)); ?> <br/>
+                                        <?php endif; ?>
+                                        <?php if (isset($movie['cast'])):?>
+                                            <b>В ролях:</b> <?php echo implode(", ", array_slice($movie['cast'], 0, 4)); ?> <br/>
+                                        <?php endif; ?>
+                                        <b>Описание:</b> <?php echo $descriptions[$movie['movie_id']];?><br/><br/>
+                                        <?php if (!empty($movie['rating_imdb_value'])): ?>
+                                            Рейтинг IMDB: <?php echo $movie['rating_imdb_value'];?><br/>
+                                        <?php endif; ?>
+                                        <?php if (!empty($movie['rating_kinopoisk_value'])): ?>
+                                            Рейтинг KinoPoisk.RU: <?php echo $movie['rating_kinopoisk_value'];?><br/>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            </table>
+                        ]]></content:encoded>
+                        <pubDate><?php echo date("r", strtotime($movie['updated_at']));?> </pubDate>
+                        <guid><?php echo rtrim(Lms_Application::getConfig('siteurl'), '/') . "/#movie/id/{$movie['movie_id']}/updated/" . strtotime($movie['updated_at']); ?></guid>
+                    </item>
+                <?php endforeach;
+            } catch (Exception $e) {
+                Lms_Debug::err($e->getMessage());
+            }
+        ?>
+    </channel>
 </rss>
+<?php 
+    Lms_Application::close();
+?>

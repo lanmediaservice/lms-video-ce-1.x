@@ -21,41 +21,23 @@ if ( !$result )
 
 if (isset($config['mysql_set_names'])) mysql_query($config['mysql_set_names']);
 
-$filmid = (int) $_REQUEST['filmid'];
-$fileid = isset($_REQUEST['fileid']) ? $wherefile = " AND files.ID = '".mysql_real_escape_string($_REQUEST['fileid'])."' " : $wherefile = "";
+$movieId = (int) $_REQUEST['movieid'];
+if (isset($_REQUEST['fileid'])) {
+    $wherefile = " AND f.file_id = '".mysql_real_escape_string($_REQUEST['fileid'])."' "; 
+} else {
+    $wherefile = "";
+}
 $userid = (isset($_REQUEST['uid'])) ? (int) $_REQUEST['uid'] : 0;
 $v = isset($_REQUEST['v']) ? addslashes($_REQUEST['v']) : ""; 
-
-if ($userid>0){
-    inc_hit($userid, $filmid);
-}
 
 
 switch (strtolower($_REQUEST["player"])) { 
     case "ftp":
-        if ($filmid && getLeechProtectionCode(array($filmid,$_REQUEST['fileid'],$userid))==$v){
-            $maxdownload = (isset($config['max_ftp_download'])) ? $config['max_ftp_download'] : 0;
-            $today_hits = array();
-            $message = "";
-            if ($maxdownload){
-                $sql = "SELECT * FROM hits WHERE DateHit > NOW() - INTERVAL 1 DAY AND UserID=$userid";
-                $result = mysql_query($sql);
-                while ($result && $field = mysql_fetch_assoc($result)){
-                    $today_hits[] = $field["FilmID"];
-                }
-                if ((count($today_hits)>$maxdownload) && (!in_array($filmid,$today_hits))) {
-                    echo "Извините, Ваш лимит на сутки в $maxdownload закачек исчерпан.";
-                    break;
-                }
-                else{
-                    $message = "<br>Закачек за сутки ".count($today_hits)."/$maxdownload";
-                }
-
-            }
-            
-            $sql = "SELECT files.Path as Path, films.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+        if ($movieId && getLeechProtectionCode(array($movieId,$_REQUEST['fileid'],$userid))==$v){
+            $sql = "SELECT f.path as `Path`, m.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             $dnld = "";
+            $message = "";
             while ($result && $field = mysql_fetch_assoc($result)){
                 $path = (str_replace($config['source'],$config['ftp'],$field["Path"]));
 
@@ -75,8 +57,8 @@ switch (strtolower($_REQUEST["player"])) {
     case "la":
         header("Content-type: video/lap"); 
         header('Content-Disposition: attachment; filename="playlist.lap"'); 
-        if ($filmid){
-            $sql = "SELECT files.Path as Path, files.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+        if ( $movieId){
+            $sql = "SELECT f.path as `Path`, f.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             while ($result && $field = mysql_fetch_assoc($result)){
                 $path = str_replace($config['source'],$config['smb'],$field["Path"]);
@@ -90,8 +72,8 @@ switch (strtolower($_REQUEST["player"])) {
         header("Content-type: video/asx"); 
         header('Content-Disposition: attachment; filename="playlist.asx"'); 
         echo "<Asx Version = \"3.0\" >\r\n<Param Name = \"Name\" />\r\n\r\n";
-        if ($filmid){
-            $sql = "SELECT files.Path as Path, files.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+        if ( $movieId){
+            $sql = "SELECT f.path as `Path`, f.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             while ($result && $field = mysql_fetch_assoc($result)){
                 $path = str_replace($config['source'],$config['smb'],$field["Path"]);
@@ -106,8 +88,8 @@ switch (strtolower($_REQUEST["player"])) {
         header("Content-type: video/mpcpl"); 
         header('Content-Disposition: attachment; filename="playlist.mpcpl"'); 
         echo "MPCPLAYLIST\r\n";
-        if ($filmid){
-            $sql = "SELECT files.Path as Path, files.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+        if ( $movieId){
+            $sql = "SELECT f.path as `Path`, f.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             $i = 1;
             while ($result && $field = mysql_fetch_assoc($result)){
@@ -123,8 +105,8 @@ switch (strtolower($_REQUEST["player"])) {
     case "crp":
         header("Content-type: video/mls"); 
         header('Content-Disposition: attachment; filename="playlist.mls"'); 
-        if ($filmid){
-            $sql = "SELECT files.Path as Path, files.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+        if ( $movieId){
+            $sql = "SELECT f.path as `Path`, f.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             while ($result && $field = mysql_fetch_assoc($result)){
                 $path = str_replace($config['source'],$config['smb'],$field["Path"]);
@@ -137,8 +119,8 @@ switch (strtolower($_REQUEST["player"])) {
     case "bsl":
         header("Content-type: video/bsl"); 
         header('Content-Disposition: attachment; filename="playlist.bsl"'); 
-        if ($filmid){
-            $sql = "SELECT files.Path as Path, files.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+        if ( $movieId){
+            $sql = "SELECT f.path as `Path`, f.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             while ($result && $field = mysql_fetch_assoc($result)){
                 $path = str_replace($config['source'],$config['smb'],$field["Path"]);
@@ -151,8 +133,8 @@ switch (strtolower($_REQUEST["player"])) {
     case "tox":
         header("Content-type: video/tox"); 
         header('Content-Disposition: attachment; filename="playlist.tox"'); 
-        if ($filmid){
-            $sql = "SELECT files.Path as Path, files.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+        if ( $movieId){
+            $sql = "SELECT f.path as `Path`, f.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             echo "# toxine playlist\n";
             while ($result && $field = mysql_fetch_assoc($result)){
@@ -170,8 +152,8 @@ switch (strtolower($_REQUEST["player"])) {
     case "kaf":
         header("Content-type: video/kaffeine"); 
         header('Content-Disposition: attachment; filename="playlist.kaffeine"'); 
-        if ($filmid){
-            $sql = "SELECT files.Path as Path, files.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+        if ( $movieId){
+            $sql = "SELECT f.path as `Path`, f.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             echo "<!DOCTYPE XMLPlaylist>\n";
             echo "<playlist client=\"kaffeine\" >\n";
@@ -187,9 +169,9 @@ switch (strtolower($_REQUEST["player"])) {
     case "pls":
         header("Content-type: video/pls"); 
         header('Content-Disposition: attachment; filename="playlist.pls"'); 
-        if ($filmid){
+        if ( $movieId){
             echo "[playlist]";
-            $sql = "SELECT files.Path as Path, files.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+            $sql = "SELECT f.path as `Path`, f.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             if ($result){
                 echo "\nnumberofentries=" . mysql_num_rows($result);
@@ -207,12 +189,18 @@ switch (strtolower($_REQUEST["player"])) {
         header("Content-type: video/xspf"); 
         header('Content-Disposition: attachment; filename="playlist.xspf"'); 
         echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<playlist version=\"1\" xmlns=\"http://xspf.org/ns/0/\" xmlns:vlc=\"http://www.videolan.org/vlc/playlist/ns/0/\">\n<trackList>";
-        if ($filmid){
-            $sql = "SELECT files.Path as Path, files.Name as Name FROM films INNER JOIN files ON (films.ID = files.FilmID) WHERE films.ID = '$filmid' $wherefile ORDER BY files.Name";
+        if ( $movieId){
+            $sql = "SELECT f.path as `Path`, f.name as Name FROM movies m INNER JOIN movies_files mf USING(movie_id) INNER JOIN files f USING(file_id) WHERE m.movie_id = '$movieId' AND is_dir=0 $wherefile ORDER BY f.Name";
             $result = mysql_query($sql);
             while ($result && $field = mysql_fetch_assoc($result)){
                 $path = str_replace($config['source'],$config['smb'],$field["Path"]);
-                if ($path{0}=='/') $path = str_replace("/","\\",$path);
+                if ($path{0}=='/') {
+                    $path = str_replace("/","\\",$path);
+                } else {
+                    $path = rawurlencode($path);
+                    $path = str_replace("%2F", "/", $path);
+                    $path = str_replace("%3A", ":", $path);
+                }
                 $path = htmlspecialchars(my_convert_cyr_string($path, 'w', 'UTF-8'));
                 $name = htmlspecialchars(my_convert_cyr_string($field["Name"], 'w', 'UTF-8'));
                 echo "\n<track>\n    <title>$name</title>\n    <location>$path</location>\n</track>\n";

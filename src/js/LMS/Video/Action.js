@@ -81,16 +81,16 @@ LMS.Video.Action = {
         );
     },
 
-    deleteBookmark: function (filmId)
+    deleteBookmark: function (movieId)
     {
         var self = this;
         this.query({
                 'action' : 'Video.deleteBookmark',
-                'film_id': filmId
+                'movie_id': movieId
             },
             function(result) {
                 if (200 == result.status) {
-                    self.emit('unstarBookmark', filmId);
+                    self.emit('unstarBookmark', movieId);
                 } else {
                     self.emit('userError', result.status, result.message);
                 }
@@ -98,17 +98,17 @@ LMS.Video.Action = {
         );
     },
 
-    addBookmark: function (filmId)
+    addBookmark: function (movieId)
     {
         var self = this;
         this.query({
                 'action' : 'Video.addBookmark',
-                'film_id': filmId
+                'movie_id': movieId
             },
             function(result) {
                 if (200 == result.status) {
                     self.emit('drawBookmarks', result.response);
-                    self.emit('starBookmark', filmId);
+                    self.emit('starBookmark', movieId);
                 } else {
                     self.emit('userError', result.status, result.message);
                 }
@@ -116,12 +116,12 @@ LMS.Video.Action = {
         );
     },
 
-    setRating: function (filmId, rating)
+    setRating: function (movieId, rating)
     {
         var self = this;
         this.query({
                 'action' : 'Video.setRating',
-                'film_id': filmId,
+                'movie_id': movieId,
                 'rating' : rating
             },
             function(result) {
@@ -201,15 +201,15 @@ LMS.Video.Action = {
     },
 
 
-    getRandomFilm: function ()
+    getRandomMovie: function ()
     {
         var self = this;
         this.query({
-                'action' : 'Video.getRandomFilm'
+                'action' : 'Video.getRandomMovie'
             },
             function(result) {
                 if (200 == result.status) {
-                    self.emit('drawRandomFilm', result.response);
+                    self.emit('drawRandomMovie', result.response);
                 } else {
                     self.emit('userError', result.status, result.message);
                 }
@@ -217,15 +217,15 @@ LMS.Video.Action = {
         );
     },
 
-    getPopFilms: function ()
+    getPopMovies: function ()
     {
         var self = this;
         this.query({
-                'action' : 'Video.getPopFilms'
+                'action' : 'Video.getPopMovies'
             },
             function(result) {
                 if (200 == result.status) {
-                    self.emit('drawPopFilms', result.response);
+                    self.emit('drawPopMovies', result.response);
                 } else {
                     self.emit('userError', result.status, result.message);
                 }
@@ -233,16 +233,16 @@ LMS.Video.Action = {
         );
     },
 
-    getFilm: function (filmId, page)
+    getMovie: function (movieId, page)
     {
         var self = this;
         this.query({
-                'action' : 'Video.getFilm',
-                'film_id' : filmId
+                'action' : 'Video.getMovie',
+                'movie_id' : movieId
             },
             function(result) {
                 if (200 == result.status) {
-                    self.emit('drawFilm', result.response, page);
+                    self.emit('drawMovie', result.response, page);
                 } else {
                     self.emit('userError', result.status, result.message);
                 }
@@ -284,16 +284,16 @@ LMS.Video.Action = {
         );
     },
 
-    getComments: function (filmId)
+    getComments: function (movieId)
     {
         var self = this;
         this.query({
                 'action' : 'Video.getComments',
-                'film_id' : filmId
+                'movie_id' : movieId
             },
             function(result) {
                 if (200 == result.status) {
-                    self.emit('drawComments', result.response, filmId);
+                    self.emit('drawComments', result.response, movieId);
                 } else {
                     self.emit('userError', result.status, result.message);
                 }
@@ -320,17 +320,17 @@ LMS.Video.Action = {
         });
     },
     
-    postComment: function (filmId, text)
+    postComment: function (movieId, text)
     {
         var self = this;
         this.query({
                 'action' : 'Video.postComment',
-                'film_id' : filmId,
+                'movie_id' : movieId,
                 'text' : text
             },
             function(result) {
                 if (200 == result.status) {
-                    self.emit('drawComments', result.response, filmId);
+                    self.emit('drawComments', result.response, movieId);
                 } else {
                     self.emit('userError', result.status, result.message);
                 }
@@ -408,12 +408,12 @@ LMS.Video.Action = {
         );
     },
     
-    setFilmField: function (filmId, field, value)
+    setMovieField: function (movieId, field, value)
     {
         var self = this;
         this.query({
-                'action' : 'Video.setFilmField',
-                'film_id' : filmId,
+                'action' : 'Cp.setMovieField',
+                'movie_id' : movieId,
                 'field' : field,
                 'value' : value
             },
@@ -426,12 +426,12 @@ LMS.Video.Action = {
         );
     },
 
-    hitFilm: function (filmId)
+    hitMovie: function (movieId)
     {
         var self = this;
         this.query({
-                'action' : 'Video.hitFilm',
-                'film_id' : filmId
+                'action' : 'Video.hitMovie',
+                'movie_id' : movieId
             },
             function(result) {
                 if (200 == result.status) {

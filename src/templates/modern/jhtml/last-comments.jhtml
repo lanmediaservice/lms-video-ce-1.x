@@ -4,13 +4,13 @@
 </div>
 <div class="inside-body">
     <table><tbody>
-    {for film in films}
-        {if film.film_id}
+    {for movie in movies}
+        {if movie.movie_id}
             <tr>
-                <td>${parseInt(film_index)+1}.</td>
+                <td>${parseInt(movie_index)+1}.</td>
                 <td>
-                    {var date = LMS.Date.datetimeStrToDate(film.added_at)}
-                    <a class="comment-tooltip" href="#/movie/id/${film.film_id}/page/comments" title="<strong>${film.user_name|escape}</strong> (${LMS.LiveDatetime.dateToStr(date, 3)}):&lt;br&gt;${window.ui.htmlizeText(film.text)|htmlspecialchars}">${film.name|escape}</a>
+                    {var date = LMS.Date.datetimeStrToDate(movie.created_at)}
+                    <a class="comment-tooltip" href="#/movie/id/${movie.movie_id}/page/comments" title="<strong>${movie.user_name|escape}</strong> (${LMS.LiveDatetime.dateToStr(date, 3)}):&lt;br&gt;${window.ui.htmlizeText(movie.text)|htmlspecialchars}">${movie.name|escape}</a>
                 </td>
             </tr>
         {/if}

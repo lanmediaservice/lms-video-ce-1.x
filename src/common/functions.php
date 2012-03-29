@@ -258,7 +258,7 @@ function GetUserID($login, $pass)
 	$IP = get_ip();
 	$passmd5 = md5($pass);
 
-	include_once "classes/auth.php";
+	include_once dirname(__DIR__) . "/classes/auth.php";
 	// conversion old stament
 	if (isset($config['ipb2']) && $config['ipb2']['enabled']) {
 		$config["integration"] = $config['ipb2'];
@@ -277,7 +277,7 @@ function GetUserID($login, $pass)
 	}
 
 	if ($config["integration"]["enabled"]) {
-		include_once "classes/auth_" . $config["integration"]["type"] . ".php";
+		include_once dirname(__DIR__) . "/classes/auth_" . $config["integration"]["type"] . ".php";
 		$ext_idSQLConnection = mysql_connect(
 			(isset($config['integration']['mysqlhost']))?$config['integration']['mysqlhost']:$config['mysqlhost'],
 			(isset($config['integration']['mysqluser']))?$config['integration']['mysqluser']:$config['mysqluser'],

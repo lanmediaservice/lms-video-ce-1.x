@@ -20,7 +20,7 @@ class Lms_User
     public static function getUser()
     {
         if (!self::$_userInstance) {
-            self::$_userInstance = new Lms_Item_User();
+            self::$_userInstance = Lms_Item::create('User');
             self::initUserInstance();
         }
         if (self::$_identified===null) {

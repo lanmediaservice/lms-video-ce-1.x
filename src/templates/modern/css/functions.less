@@ -98,10 +98,11 @@
   transition-timing-function: @tf;
 }
 
-.transition (@property, @time, @func) {
+.transition (@property, @time, @func, @td: 0s) {
     .transition-property(@property);
     .transition-duration(@time);
     .transition-timing-function(@func);
+    .transition-delay(@td);
 }
 
 .box-shadow (@x: 0, @y: 0, @blur: 1px, @alpha) {
@@ -132,4 +133,13 @@
     text-overflow: ellipsis;
     -o-text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.user-select-none {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }

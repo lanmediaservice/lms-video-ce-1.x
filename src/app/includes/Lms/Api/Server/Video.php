@@ -18,7 +18,6 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
         try {
             $genre = (isset($params['genre'])) ? (int) $params['genre'] : null;
             $country = (isset($params['country'])) ? (int) $params['country'] : null;
-            $typeofmovie = (isset($params['typeofmovie'])) ? $params['typeofmovie'] : null;
             $order = (isset($params['order'])) ? (int) $params['order'] : 0;
             $dir = (isset($params['dir'])) ? $params['dir'] : "";
             $offset = (isset($params['offset'])) ? (int) $params['offset'] : 0;
@@ -30,58 +29,57 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             $user = Lms_User::getUser();
             $db = Lms_Db::get('main');
             
-            if (!$user->isAllowed("film", "moderate")) {
-                $wheres[] = " f.Hide=0 ";
+            if (!$user->isAllowed("movie", "moderate")) {
+                $wheres[] = " m.hidden=0 ";
             }
             
             if ($genre) {
-                $wheres[] = " filmgenres.GenreID=$genre ";
-                $join .= " LEFT JOIN filmgenres ON (f.ID = filmgenres.FilmID) ";
+                $wheres[] = " movies_genres.genre_id=$genre ";
+                $join .= " LEFT JOIN movies_genres USING(movie_id) ";
             }
             if ($country) {
-                $wheres[] = " filmcountries.CountryID=$country ";
-                $join .= " LEFT JOIN filmcountries ON (f.ID = filmcountries.FilmID) ";
+                $wheres[] = " movies_countries.country_id=$country ";
+                $join .= " LEFT JOIN movies_countries USING(movie_id) ";
             }
-
-            if ($typeofmovie) {
-                $wheres[] = " f.TypeOfMovie='" . mysql_real_escape_string($typeofmovie) . "' ";
-            }
-
 
             $orderby = " ORDER BY ";
             switch ($order) {
                 case 100:
-                    $orderby .= " ID ";
+                    $orderby .= " `movie_id` ";
                 break;
                 case 0:
-                    $orderby .= " CreateDate ";
+                    $orderby .= " m.`updated_at` ";
                 break;
                 case 1:
-                    $orderby .= " Year ";
+                    $orderby .= " `year` ";
                 break;
                 case 2:
-                    $orderby .= " ImdbRating ";
+                    $orderby .= " `value` ";
+                    $join .= " LEFT JOIN ratings USING(movie_id) ";
+                    $wheres[] = " `system`='imdb' AND (`count`=0 OR `count` IS NULL OR `count`>100) ";
+                break;
+                case 9:
+                    $orderby .= " `value` ";
+                    $join .= " LEFT JOIN ratings USING(movie_id) ";
+                    $wheres[] = " `system`='kinopoisk' AND `count`>100 ";
                 break;
                 case 3:
-                    $orderby .= " LocalRating ";
+                    $orderby .= " `value` ";
+                    $join .= " LEFT JOIN ratings USING(movie_id) ";
+                    $wheres[] = " `system`='local' ";
                 break;
                 case 4:
-                    $orderby .= " rating_personal_value ";
+                    $orderby .= " rating ";
+                    $join .= " LEFT JOIN movies_users_ratings mur ON(m.movie_id=mur.movie_id AND mur.user_id=" . $user->getId() . ") ";
                 break;
                 case 6:
-                    $orderby .= " Hit ";
-                break;
-                case 7:
-                    $orderby .= " AutoRating ";
+                    $orderby .= " hit ";
                 break;
                 case 8:
-                    $orderby .= " Rank ";
-                break;
-                case 5:
-                    $orderby .= " Name ";
+                    $orderby .= " rank ";
                 break;
                 default:
-                    $orderby .= " CreateDate DESC";
+                    $orderby .= " m.`updated_at` DESC";
             }
             switch ($dir) {
                 case 'DESC':
@@ -93,122 +91,138 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             }
 
             if ($order==3) {
-                $orderby .= " ,CountLocalRating DESC ";
+                $orderby .= " , `count` DESC ";
             }
             
             if ($order==1) {
-                $orderby .= ", ID DESC";
+                $orderby .= ", m.`updated_at` DESC";
             } else {
-                $orderby .= ", ID";
+                //$orderby .= ", movie_id";
             }
 
             $where = (count($wheres)) ? " WHERE ".implode(" AND ",$wheres) : "";
 
-            $avgHit = $db->selectCell('SELECT sum(Hit)/count(*) FROM films WHERE Hide=0');
+            $avgHit = $db->selectCell('SELECT sum(hit)/count(*) FROM movies WHERE hidden=0');
             $hitThreshold = round($avgHit*Lms_Application::getConfig('hit_factor'));
 
-            $sql = "SELECT f.ID AS ARRAY_KEY,
-                f.ID as film_id,
-                f.Name as name,
-                f.OriginalName as international_name,
-                f.Year as year,
-                f.CreateDate as create_date,
-                f.UpdateDate as update_date,
-                ROUND(f.ImdbRating/10, 1) as rating_imdb_value,
-                f.Description as description,
-                CONCAT(f.BigPosters, '\n', f.Poster) as `covers`,
-                f.TypeOfMovie as type_of_movie,
-                f.Translation as translation,
-                f.Quality as quality,
-                f.Hide as hide,
-                f.Hit as hit,
-                ufr.Rating as rating_personal_value,
-                ROUND(f.LocalRating/10, 1) as rating_local_value,
-                f.CountLocalRating as rating_local_count
-                FROM films f $join LEFT JOIN userfilmratings ufr ON (f.ID = ufr.FilmID AND ufr.UserID=?d) $where $orderby LIMIT ?d, ?d";
+            $sql = "SELECT m.movie_id AS ARRAY_KEY
+                    FROM movies m $join $where $orderby LIMIT ?d, ?d";
             
             $total = 0;
-            $films = $db->selectPage(
+            $rows = $db->selectPage(
                 $total, $sql, 
-                $user->getId(),
                 $offset, $size
             );
             $result['total'] = $total;
             $result['offset'] = $offset;
             $result['pagesize'] = $size;
             
-            $filmsIds = array_keys($films);
+            $moviesIds = array_keys($rows);
+
+            
+            $sql = "SELECT m.movie_id AS ARRAY_KEY,
+                        m.movie_id,
+                        `name`,
+                        international_name,
+                        year,
+                        m.created_at,
+                        m.updated_at,
+                        description,
+                        `covers`,
+                        translation,
+                        quality,
+                        hidden,
+                        hit
+                    FROM movies m WHERE m.movie_id IN(?a)";
+            
+            $movies = array();
+            $rows = $db->select($sql, $moviesIds);
+            foreach ($moviesIds as $movieId) {
+                $movies[$movieId] = $rows[$movieId];
+            }
             
             $rows = $db->select(
-                "SELECT FilmID, Name FROM filmgenres LEFT JOIN genres ON (genres.ID = filmgenres.GenreID) WHERE filmgenres.FilmID IN(?a)",
-                $filmsIds
+                "SELECT movie_id, name FROM movies_genres LEFT JOIN genres USING(genre_id) WHERE movie_id IN(?a)",
+                $moviesIds
             );
             foreach ($rows as $row) {
-                $filmId = $row['FilmID'];
-                $films[$filmId]['genres'][] = $row['Name'];
+                $movieId = $row['movie_id'];
+                $movies[$movieId]['genres'][] = $row['name'];
             }
 
             $rows = $db->select(
-                "SELECT FilmID, Name FROM filmcountries LEFT JOIN countries ON (countries.ID = filmcountries.CountryID) WHERE filmcountries.FilmID IN(?a)",
-                $filmsIds
+                "SELECT movie_id, name FROM movies_countries LEFT JOIN countries USING(country_id) WHERE movie_id IN(?a)",
+                $moviesIds
             );
             foreach ($rows as $row) {
-                $filmId = $row['FilmID'];
-                $films[$filmId]['countries'][] = $row['Name'];
+                $movieId = $row['movie_id'];
+                $movies[$movieId]['countries'][] = $row['name'];
             }
 
             $rows = $db->select(
-                "SELECT FilmID, count(*) as c FROM comments WHERE FilmID IN(?a) AND (ISNULL(ToUserID) OR ToUserID IN(0, ?d) OR UserID=?d) GROUP BY FilmID",
-                $filmsIds,
+                "SELECT movie_id, count(*) as c FROM comments LEFT JOIN movies_comments USING(comment_id) WHERE movie_id IN(?a) AND (ISNULL(to_user_id ) OR to_user_id  IN(0, ?d) OR user_id=?d) GROUP BY movie_id",
+                $moviesIds,
                 $user->getId(),
                 $user->getId()
             );
             foreach ($rows as $row) {
-                $filmId = $row['FilmID'];
-                $films[$filmId]['comments_count'] = $row['c'];
+                $movieId = $row['movie_id'];
+                $movies[$movieId]['comments_count'] = $row['c'];
             }
 
             $rows = $db->select(
-                "SELECT filmpersones.FilmID, persones.RusName, persones.OriginalName, roles.Role, roles.SortOrder FROM filmpersones LEFT JOIN roles ON (roles.ID = filmpersones.RoleID) LEFT JOIN persones ON (persones.ID = filmpersones.PersonID) WHERE filmpersones.FilmID IN(?a) ORDER BY SortOrder, LENGTH(Images) DESC",
-                $filmsIds
+                "SELECT * FROM ratings WHERE movie_id IN(?a)",
+                $moviesIds
             );
             foreach ($rows as $row) {
-                $filmId = $row['FilmID'];
-                if ($row["Role"]=="режиссер") {
-                    if (!isset($films[$filmId]['directors'])) {
-                        $films[$filmId]['directors'] = array();
+                $movieId = $row['movie_id'];
+                $valueKey = "rating_" . $row['system'] . "_value";
+                $countKey = "rating_" . $row['system'] . "_count";
+                $movies[$movieId][$valueKey] = $row['value'];
+                $movies[$movieId][$countKey] = $row['count'];
+            }
+            
+            $rows = $db->select(
+                "SELECT movie_id, p.`name`, p.`international_name`, r.`name` as `role`, r.`sort` FROM participants LEFT JOIN roles r USING(role_id) LEFT JOIN persones p USING(person_id) WHERE participants.movie_id IN(?a) ORDER BY `sort`, LENGTH(`photos`) DESC",
+                $moviesIds
+            );
+            foreach ($rows as $row) {
+                $movieId = $row['movie_id'];
+                if ($row["role"]=="режиссер") {
+                    if (!isset($movies[$movieId]['directors'])) {
+                        $movies[$movieId]['directors'] = array();
                     }
-                    if (count($films[$filmId]['directors'])<=2) {
-                        $films[$filmId]['directors'][] = trim($row["RusName"])? $row["RusName"] : $row["OriginalName"];
+                    if (count($movies[$movieId]['directors'])<=2) {
+                        $movies[$movieId]['directors'][] = trim($row["name"])? $row["name"] : $row["international_name"];
                     }
                 }
-                if (in_array($row["Role"], array("актер","актриса"))) {
-                    if (!isset($films[$filmId]['cast'])) {
-                        $films[$filmId]['cast'] = array();
+                if (in_array($row["role"], array("актер","актриса"))) {
+                    if (!isset($movies[$movieId]['cast'])) {
+                        $movies[$movieId]['cast'] = array();
                     }
-                    if (count($films[$filmId]['cast'])<=4) {
-                        $films[$filmId]['cast'][] = trim($row["RusName"]) ? $row["RusName"] : $row["OriginalName"];
+                    if (count($movies[$movieId]['cast'])<=4) {
+                        $movies[$movieId]['cast'][] = trim($row["name"]) ? $row["name"] : $row["international_name"];
                     }
                 }
             }
 
-            foreach ($films as &$film) {
-                $film["popular"] = $film['hit']>$hitThreshold? true : false;
-                $film["hide"] = $film['hide']? true : false;
+            foreach ($movies as &$movie) {
+                $movie["popular"] = $movie['hit']>$hitThreshold? true : false;
+                $movie["hidden"] = $movie['hidden']? true : false;
                 
                 if (Lms_Application::getConfig('short_translation')) {
-                    $film["short_translation"] = strtr($film["translation"], Lms_Application::getConfig('short_translation'));
+                    $movie["short_translation"] = strtr($movie["translation"], Lms_Application::getConfig('short_translation'));
                 }
 
                 if (Lms_Application::getConfig('short_description')) {
-                    $film["description"] = Lms_Text::tinyString(strip_tags($film["description"]), Lms_Application::getConfig('short_description'), 1);
+                    $movie["description"] = Lms_Text::tinyString(strip_tags($movie["description"]), Lms_Application::getConfig('short_description'), 1);
                 } else{
-                    unset($film["description"]);
+                    unset($movie["description"]);
                 }
             }
-            Lms_Item_Film::postProcess($films, 100);
+            Lms_Item_Movie::postProcess($movies, 100);
             
-            $result['films'] = array_values($films);
+            $result['movies'] = array_values($movies);
 
             return new Lms_Api_Response(200, null, $result);
             
@@ -227,18 +241,18 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             $user = Lms_User::getUser();
             $db = Lms_Db::get('main');
             
-            if (!$user->isAllowed("film", "moderate")) {
-                $wheres[] = " films.Hide=0 ";
+            if (!$user->isAllowed("movie", "moderate")) {
+                $wheres[] = " movies.hidden=0 ";
             }
             if ($country) {
-                $wheres[] = " filmcountries.CountryID=$country ";
-                $join .= " LEFT JOIN filmcountries ON (films.ID = filmcountries.FilmID) ";
+                $wheres[] = " movies_countries.country_id=$country ";
+                $join .= " LEFT JOIN movies_countries USING (movie_id) ";
             }
             $where = (count($wheres)) ? " WHERE " . implode(" AND ", $wheres) : "";
 
             $result["genres"] = array();
             
-            $sql = "SELECT genres.ID as id, genres.Name as name, count(*) as count FROM genres INNER JOIN filmgenres ON (genres.ID = filmgenres.GenreID) INNER JOIN films ON (films.ID = filmgenres.filmid) $join $where GROUP BY genres.ID ORDER BY Name";
+            $sql = "SELECT g.genre_id as id, g.name, count(*) as `count` FROM genres g INNER JOIN movies_genres USING(genre_id) INNER JOIN movies USING(movie_id) $join $where GROUP BY g.genre_id ORDER BY g.`name`";
             $rows = $db->select($sql);
             foreach ($rows as $row) {
                 $result["genres"][] = $row;
@@ -260,18 +274,18 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             $user = Lms_User::getUser();
             $db = Lms_Db::get('main');
             
-            if (!$user->isAllowed("film", "moderate")) {
-                $wheres[] = " films.Hide=0 ";
+            if (!$user->isAllowed("movie", "moderate")) {
+                $wheres[] = " movies.hidden=0 ";
             }
             if ($genre) {
-                $wheres[] = " filmgenres.GenreID=$genre ";
-                $join .= " LEFT JOIN filmgenres ON (films.ID = filmgenres.FilmID) ";
+                $wheres[] = " movies_genres.genre_id=$genre ";
+                $join .= " LEFT JOIN movies_genres USING (movie_id) ";
             }
             $where = (count($wheres)) ? " WHERE " . implode(" AND ", $wheres) : "";
 
             $result["countries"] = array();
             
-            $sql = "SELECT countries.ID as id, countries.Name as name, count(*) as count FROM countries INNER JOIN filmcountries ON (countries.ID = filmcountries.CountryID) INNER JOIN films ON (films.ID = filmcountries.filmid) $join $where GROUP BY countries.ID ORDER BY Name";
+            $sql = "SELECT c.country_id as id, c.name, count(*) as `count` FROM countries c INNER JOIN movies_countries USING(country_id) INNER JOIN movies USING(movie_id) $join $where GROUP BY c.country_id ORDER BY c.`name`";
             $rows = $db->select($sql);
             foreach ($rows as $row) {
                 $result["countries"][] = $row;
@@ -289,41 +303,41 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             $db = Lms_Db::get('main');
             $wheres = array();
             
-            $wheres[] = "(ISNULL(ToUserID) OR ToUserID=0 {OR ToUserID=?d OR UserID=?d})";
-            if (!$user->isAllowed("film", "moderate")) {
-                $wheres[] = " films.Hide=0 ";
+            $wheres[] = "(ISNULL(to_user_id) OR to_user_id=0 {OR to_user_id=?d OR user_id=?d})";
+            if (!$user->isAllowed("movie", "moderate")) {
+                $wheres[] = " m.hidden=0 ";
             }
-            $sql = "SELECT FilmID as film_id, films.Name as name, max(comments.ID) as comment_id "
-                 . "FROM comments LEFT JOIN films ON (films.ID = comments.FilmID) "
+            $sql = "SELECT m.movie_id, m.name, max(c.comment_id) as last_comment_id "
+                 . "FROM comments c INNER JOIN movies_comments USING(comment_id) INNER JOIN movies m USING(movie_id) "
                  . "WHERE " . implode(' AND ', $wheres) . " "
-                 . "GROUP BY comments.FilmID ORDER BY comment_id DESC LIMIT 0,20";
+                 . "GROUP BY m.movie_id ORDER BY last_comment_id DESC LIMIT 0,20";
             
-            $films = $db->select(
+            $movies = $db->select(
                 $sql,
                 $user->getId()? $user->getId() : DBSIMPLE_SKIP,
                 $user->getId()? $user->getId() : DBSIMPLE_SKIP
             );
-            if (count($films)) {
+            if (count($movies)) {
                 $maxlength = 80;
                 $commentsIds = array();
-                foreach ($films as $row) {
-                    $commentsIds[] = $row['comment_id'];
+                foreach ($movies as $row) {
+                    $commentsIds[] = $row['last_comment_id'];
                 }
-
-                $sql = 'SELECT comments.ID AS ARRAY_KEY, users.Login as user_name, `Date` as `added_at`, `Text` as `text` '
-                     . 'FROM comments LEFT JOIN users ON (users.ID = comments.UserID) ' 
-                     . 'WHERE comments.ID IN(?a)';
+                array_multisort($commentsIds, SORT_DESC, $movies);
+                
+                $sql = 'SELECT c.comment_id AS ARRAY_KEY, users.Login as user_name, c.created_at, `Text` as `text` '
+                     . 'FROM comments c INNER JOIN users ON(c.user_id=users.ID) ' 
+                     . 'WHERE c.comment_id IN(?a) ORDER BY c.`created_at` DESC';
                 $comments = $db->select($sql, $commentsIds);
-
-                foreach ($films as &$row) {
-                    $commentId = $row['comment_id'];
+                foreach ($movies as &$row) {
+                    $commentId = $row['last_comment_id'];
                     $comment = $comments[$commentId];
                     $row['text'] = Lms_Text::tinyString($comment['text'], 500, 1);
                     $row['user_name'] = $comment["user_name"];
-                    $row["added_at"] = $comment["added_at"];
+                    $row["created_at"] = $comment["created_at"];
                 }
             }
-            $result['films'] = $films;
+            $result['movies'] = $movies;
             return new Lms_Api_Response(200, null, $result);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
@@ -336,64 +350,61 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             $user = Lms_User::getUser();
             $db = Lms_Db::get('main');
             $wheres = array();
-            if (!$user->isAllowed("film", "moderate")) {
-                $wheres[] = " films.Hide=0 ";
+            if (!$user->isAllowed("movie", "moderate")) {
+                $wheres[] = " m.hidden=0 ";
             }
-            $sql = "SELECT FilmID as film_id, films.Name as `name`, userfilmratings.Rating as `rating` "
-                 . "FROM userfilmratings LEFT JOIN films ON (films.ID = userfilmratings.FilmID) "
+            $sql = "SELECT m.movie_id, `name`, `rating` "
+                 . "FROM movies_users_ratings mur LEFT JOIN movies m USING(movie_id) "
                  . (count($wheres)? "WHERE " . implode(' AND ', $wheres) . " " : "")
-                 . "ORDER BY Date DESC LIMIT 0,20";
+                 . "ORDER BY mur.`created_at` DESC LIMIT 0,20";
             
             $ratings = $db->select($sql);
-            $result['films'] = $ratings;
+            $result['movies'] = $ratings;
             return new Lms_Api_Response(200, null, $result);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
         }
     }
         
-    public static function getRandomFilm($params)
+    public static function getRandomMovie($params)
     {
         try {
             $user = Lms_User::getUser();
             $db = Lms_Db::get('main');
 
-            $avgHit = $db->selectCell('SELECT sum(Hit)/count(*) FROM films WHERE Hide=0');
+            $avgHit = $db->selectCell('SELECT sum(Hit)/count(*) FROM movies WHERE hidden=0');
             $hitThreshold = round($avgHit*Lms_Application::getConfig('hit_factor'));
-            $maxFilmId = $db->selectCell('SELECT MAX(ID) FROM films WHERE Hide=0');
-            $offsetId = rand(0, $maxFilmId);
+            $maxMovieId = $db->selectCell('SELECT MAX(movie_id) FROM movies WHERE hidden=0');
+            $offsetId = rand(0, $maxMovieId);
             
             $wheres = array();
-            if (!$user->isAllowed("film", "moderate")) {
-                $wheres[] = " films.Hide=0 ";
+            if (!$user->isAllowed("movie", "moderate")) {
+                $wheres[] = " movies.hidden=0 ";
             }
-            $wheres[] = " films.ID>=$offsetId";
-            $sql = "SELECT films.ID as film_id, "
-                 . "    films.Name as name, "
-                 . "    films.OriginalName as international_name, "
-                 . "    films.Year as `year`, "
-                 . "    films.BigPosters as big_posters, "
-                 . "    films.Poster as poster, "
-                 . "    films.Hit as hit "
-                 . "FROM films "
+            $wheres[] = " movies.movie_id>=$offsetId";
+            $sql = "SELECT movie_id, "
+                 . "    name, "
+                 . "    international_name, "
+                 . "    `year`, "
+                 . "    `covers`, "
+                 . "    `hit` "
+                 . "FROM movies "
                  . (count($wheres)? "WHERE " . implode(' AND ', $wheres) . " " : "")
                  . "LIMIT 1";
-            $film = $db->selectRow($sql);
+            $movie = $db->selectRow($sql);
             $result = array();
-            if ($film) {
-                $film["popular"] = $film['hit']>$hitThreshold? 1 : 0;
-                $film["international_name"] = htmlentities($film["international_name"], ENT_NOQUOTES, 'cp1252');
+            if ($movie) {
+                $movie["popular"] = $movie['hit']>$hitThreshold? 1 : 0;
+                //$movie["international_name"] = htmlentities($movie["international_name"], ENT_NOQUOTES, 'cp1252');
                 $covers = array_values(array_filter(array_merge(
-                    preg_split("/(\r\n|\r|\n)/", $film["big_posters"]), 
-                    preg_split("/(\r\n|\r|\n)/", $film["poster"])
+                    preg_split("/(\r\n|\r|\n)/", $movie["covers"])
                 )));
-                $film["cover"] = array_shift($covers);
-                if ($film["cover"]) {
-                    $film["cover"] = Lms_Application::thumbnail($film["cover"], $width = 100, $height = 0);
+                $movie["cover"] = array_shift($covers);
+                if ($movie["cover"]) {
+                    $movie["cover"] = Lms_Application::thumbnail($movie["cover"], $width = 100, $height = 0);
                 }
-                unset($film["poster"]);
-                unset($film["big_posters"]);
-                $result['film'] = $film;
+                unset($movie["covers"]);
+                $result['movie'] = $movie;
             }
             
             return new Lms_Api_Response(200, null, $result);
@@ -402,27 +413,31 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
         }
     }
 
-    public static function getPopFilms($params)
+    public static function getPopMovies($params)
     {
         try {
             $count = isset($params['count']) ? (int) $params['count'] : 10;
 
             $db = Lms_Db::get('main');
-            $sql = "SELECT ID as film_id, Name as `name` FROM films " 
-                 . "WHERE films.Hide=0 " 
-                 . "ORDER BY Rank DESC LIMIT ?d";
-            $films = $db->select($sql, $count);
-            $result['films'] = $films;
+            $sql = "SELECT movie_id, `name` FROM movies " 
+                 . "WHERE hidden=0 " 
+                 . "ORDER BY rank DESC LIMIT ?d";
+            $movies = $db->select($sql, $count);
+            $result['movies'] = $movies;
             return new Lms_Api_Response(200, null, $result);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
         }
     }
 
-    public static function getFilm($params)
+    public static function getMovie($params)
     {
         try {
-            $filmId = (int) $params['film_id'];
+            $movieId = (int) $params['movie_id'];
+            if (!$movieId) {
+                return new Lms_Api_Response(400);
+            }
+
             $user = Lms_User::getUser();
             $db = Lms_Db::get('main');
             
@@ -430,184 +445,138 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 $db->query('UPDATE users SET ViewActivity=ViewActivity+1 WHERE ID=?d', $user->getId());
             }
             
-            $avgHit = $db->selectCell('SELECT sum(Hit)/count(*) FROM films WHERE Hide=0');
+            $avgHit = $db->selectCell('SELECT sum(Hit)/count(*) FROM movies WHERE hidden=0');
             $hitThreshold = round($avgHit*Lms_Application::getConfig('hit_factor'));
             
-            $wheres = array();
-            if (!$user->isAllowed("film", "moderate")) {
-                $wheres[] = " films.Hide=0 ";
-            }
-            $sql = "SELECT films.ID as film_id, "
-                 . "films.Name as name, "
-                 . "films.OriginalName as international_name, "
-                 . "films.Year as year, "
-                 . "films.RunTime as runtime, "
-                 . "films.Description as description, "
-                 . "films.MPAA as mpaa, "
-                 . "films.Resolution as resolution, "
-                 . "films.VideoInfo as video_info, "
-                 . "films.AudioInfo as audio_info, "
-                 . "films.Translation as translation, "
-                 . "films.Quality as quality, "
-                 . "films.CreateDate as create_date, "
-                 . "films.UpdateDate as update_date, "
-                 . "ROUND(films.ImdbRating/10, 1) as rating_imdb_value, "
-                 . "IF(LENGTH(films.imdbID)>0, CONCAT('http://www.imdb.com/title/', films.imdbID), '') as imdb_url, "
-                 . "films.Poster as poster, "
-                 . "films.BigPosters as big_posters, "
-                 . "films.Trailer as trailer, "
-                 . "films.TypeOfMovie as type_of_movie, "
-                 . "films.Hide as hide, "
-                 . "films.Hit as hit, "
-                 . "films.SoundTrack as soundtrack, "
-                 . "films.Links as links, "
-                 . "films.Present as present, "
-                 . "films.Group as `group`, "
-                 . "films.Frames as frames, "
-                 . "films.SmallFrames as small_frames, "
-                 . "ufr.Rating as rating_personal_value, "
-                 . "ROUND(films.LocalRating/10, 1) as rating_local_value, "
-                 . "films.LocalRatingDetail as rating_local_detail, "
-                 . "films.CountLocalRating as rating_local_count, "
-                 . "users.Login as moderator "
-                 . "FROM films " 
-                 . "    LEFT JOIN userfilmratings ufr ON (films.ID = ufr.FilmID AND ufr.UserID=?d) " 
-                 . "    LEFT JOIN users ON (films.Moderator=users.ID) WHERE films.ID=?d"
-                 . (count($wheres)? " AND " . implode(' AND ', $wheres) . " " : "");
-            $film = $db->selectRow($sql, $user->getId(), $filmId);
+            $movieItem = Lms_Item::create('Movie', $movieId);
             $result = array();
-            if ($film) {
-                $film["popular"] = $film['hit']>$hitThreshold? true : false;
-                $film["hide"] = $film['hide']? true : false;
-                $film["international_name"] = htmlentities($film["international_name"], ENT_NOQUOTES, 'cp1252');
+            if ($movieItem && (!$movieItem->getHidden() || $user->isAllowed("movie", "moderate"))) {
+                $movie = array(
+                    'movie_id' => $movieItem->getId(),
+                    'name' => $movieItem->getName(),
+                    'international_name' => $movieItem->getInternationalName(),
+                    'year' => $movieItem->getYear(),
+                    'description' => $movieItem->getDescription(),
+                    'mpaa' => $movieItem->getMpaa(),
+                    'translation' => $movieItem->getTranslation(),
+                    'quality' => $movieItem->getQuality(),
+                    'created_at' => $movieItem->getCreatedAt(),
+                    'updated_at' => $movieItem->getUpdatedAt(),
+                    'covers' => $movieItem->getCovers(),
+                    'trailer' => $movieItem->getTrailer(),
+                    'hidden' => (bool) $movieItem->getHidden(),
+                    'hit' => $movieItem->getHit(),
+                    'present_by' => $movieItem->getPresentBy(),
+                    'group' => $movieItem->getGroup(),
+                    'rating_personal_value' => $movieItem->getUserRating(),
+                    'created_by' => $movieItem->getCreatorName(),
+                    'popular' => $movieItem->getHit()>$hitThreshold? true : false,
+                );
+                //$movie["international_name"] = htmlentities($movie["international_name"], ENT_NOQUOTES, 'cp1252');
 
-                $film["genres"] = $db->selectCol('SELECT Name FROM filmgenres LEFT JOIN genres ON (genres.ID = filmgenres.GenreID) WHERE filmgenres.FilmID=?d', $filmId);
-                $film["countries"] = $db->selectCol('SELECT Name FROM filmcountries LEFT JOIN countries ON (countries.ID = filmcountries.CountryID) WHERE filmcountries.FilmID=?d', $filmId);
+                $movie["genres"] = $db->selectCol('SELECT name FROM movies_genres LEFT JOIN genres USING(genre_id) WHERE movie_id=?d', $movieId);
+                $movie["countries"] = $db->selectCol('SELECT name FROM movies_countries LEFT JOIN countries USING(country_id) WHERE movie_id=?d', $movieId);
                 
-
                 $rows = $db->select(
-                    "SELECT persones.ID as person_id, persones.RusName as name, persones.OriginalName as international_name, persones.Images as old_photos, persones.Photos as photos, roles.Role as role, filmpersones.RoleExt as `character` FROM filmpersones LEFT JOIN roles ON (roles.ID = filmpersones.RoleID) LEFT JOIN persones ON (persones.ID = filmpersones.PersonID) WHERE filmpersones.FilmID=?d ORDER BY SortOrder, LENGTH(Images) DESC",
-                    $filmId
+                    "SELECT p.*, r.name as `role`, `character` FROM participants LEFT JOIN roles r USING(role_id) LEFT JOIN persones p USING(person_id) WHERE participants.movie_id=?d ORDER BY `sort`, participant_id",
+                    $movieId
                 );
                 $persones = array();
                 foreach ($rows as $row) {
                     $personId = $row['person_id'];
                     if ($row["role"]=="режиссер") {
-                        $film['directors'][] = trim($row["name"])? $row["name"] : $row["international_name"];
+                        $movie['directors'][] = trim($row["name"])? $row["name"] : $row["international_name"];
                     }
                     $persones[$personId]['person_id'] = $personId;
                     $persones[$personId]['name'] = $row["name"];
                     $persones[$personId]['international_name'] = $row["international_name"];
                     $persones[$personId]['names'] = array_values(array_filter(array(trim($row["name"]), trim($row["international_name"]))));
-                    $photos = array_values(array_filter(array_merge(
-                        preg_split("/(\r\n|\r|\n)/", $row["photos"]), 
-                        preg_split("/(\r\n|\r|\n)/", $row["old_photos"])
-                    )));
+                    $photos = array_values(array_filter(
+                        preg_split("/(\r\n|\r|\n)/", $row["photos"])
+                    ));
                     $photo = array_shift($photos);
                     if ($photo) {
                         $photo = Lms_Application::thumbnail($photo, $width = 90, $height = 0, $defer = true);
                     }
+                    unset($row["photos"]);
                     $persones[$personId]['photo'] = $photo;
-                    $persones[$personId]['roles'][] = array("role" => $row["role"], "character" => $row["character"]);;
+                    $persones[$personId]['roles'][] = array("role" => $row["role"], "character" => $row["character"]);
                 }
-                $film['persones'] = array_values($persones);
+                $movie['persones'] = array_values($persones);
                 
-                
-                $covers = array_values(array_filter(array_merge(
-                    preg_split("/(\r\n|\r|\n)/", $film["big_posters"]), 
-                    preg_split("/(\r\n|\r|\n)/", $film["poster"])
-                )));
-                
-                $film["cover"] = array_shift($covers);
-                if ($film["cover"]) {
-                    $film["cover"] = Lms_Application::thumbnail($film["cover"], $width = 200, $height = 0);
+                $covers = array_values(array_filter(
+                    preg_split("/(\r\n|\r|\n)/", $movie["covers"])
+                ));
+                array_splice($covers, 6);
+                $movie["covers"] = array();
+                foreach ($covers as $cover) {
+                    $movie["covers"][] = array(
+                        'original' => Lms_Application::thumbnail($cover, $width = 0, $height = 0, $defer = true, $force = false), 
+                        'thumbnail' => Lms_Application::thumbnail($cover, $width = 200, $height = 0, $defer = true, $force = false)
+                    );
                 }
-               
-
-                $film["frames"] = preg_split("/(\r\n|\r|\n)/", $film["frames"]); 
-                if ($film["frames"]) {
-                    //TODO: delete frame_width, frame_height
-                    list($width, $height)= getimagesize(dirname(APP_ROOT) . '/' . $film["frames"][0]); 
-                    $film["frame_width"] = $width;
-                    $film["frame_height"] = $height;
-                    $film["small_frames"] = array();
-                    foreach ($film["frames"] as $frame) {
-                        $film["small_frames"][] = Lms_Application::thumbnail($frame, $width = 225, $height);
-                        $film["small_frame_width"] = $width;
-                        $film["small_frame_height"] = $height;
+                
+                $rows = $db->select(
+                    "SELECT * FROM ratings WHERE movie_id=?d",
+                    $movieId
+                );
+                foreach ($rows as $row) {
+                    $valueKey = "rating_" . $row['system'] . "_value";
+                    $countKey = "rating_" . $row['system'] . "_count";
+                    $urlKey = $row['system'] . "_url";
+                    $movie[$valueKey] = $row['value'];
+                    $movie[$countKey] = $row['count'];
+                    if ($row['system_uid'] && ($row['system']=='imdb' || $row['system']=='kinopoisk')) {
+                        $movie[$urlKey] = Lms_Service_Movie::getMovieUrlById($row['system_uid'], $row['system']);
                     }
                 }
                 
-                $film["comments_count"] = $db->selectCell(
-                    "SELECT count(*) as count FROM comments WHERE FilmID=?d AND (ISNULL(ToUserID) OR ToUserID=0 {OR ToUserID=?d OR UserID=?d})",
-                    $filmId,
+                $movie["comments_count"] = $db->selectCell(
+                    "SELECT count(*) as count FROM comments INNER JOIN movies_comments USING(comment_id) WHERE movie_id=?d AND (ISNULL(to_user_id) OR to_user_id=0 {OR to_user_id=?d OR user_id=?d})",
+                    $movieId,
                     $user->getId()? $user->getId() : DBSIMPLE_SKIP,
                     $user->getId()? $user->getId() : DBSIMPLE_SKIP
                 );
 
-                $rows = $db->select("SELECT ID as file_id, Name as name, Path as path, Size as `size`, ed2kLink as ed2k_link, dcppLink as dcpp_link FROM files WHERE FilmID=?d ORDER BY Path", $filmId);
-                $files = array();
-                foreach ($rows as $row) {
-                    $links = array();
-                    if (Lms_Application::getConfig('download', 'license')) {
-                        $v = Lms_Application::getLeechProtectionCode(array($filmId, $row["file_id"], $user->getId()));
-                        $links['license'] = "pl.php?player=ftp&uid=" . $user->getId() . "&filmid=$filmId&fileid=" . $row["file_id"] . "&v=$v";
-                    } else {
-                        $links['download'] = str_replace(Lms_Application::getConfig('source'), Lms_Application::getConfig('ftp'), $row['path']);
-                        if ($encoding = Lms_Application::getConfig('download', 'escape', 'encoding')) {
-                            $links['download'] = Lms_Translate::translate('CP1251', $encoding, $links['download']);
+                $movie['files'] = $movieItem->getFilesAsArray2();
+                
+                foreach ($movie['files'] as &$file) {
+                    if ($file['frames']) {
+                        array_splice($file['frames'], 6);
+                        $file["small_frames"] = array();
+                        foreach ($file['frames'] as $frame) {
+                            $file["small_frames"][] = Lms_Application::thumbnail($frame, $width = 225, $height = 0, $defer = false, $force = false);
                         }
-                        if (Lms_Application::getConfig('download', 'escape', 'enabled')) {
-                            $t = explode("/", $links['download']);
-                            for ($i=3; $i<count($t); $i++) {
-                                $t[$i] = rawurlencode($t[$i]);
-                            }
-                            $links['download'] = implode("/", $t);
-                        }
-                    }
-                    if ($row['ed2k_link']) {
-                        $links['ed2k'] = $row['ed2k_link'];
-                    }
-                    if ($row['dcpp_link']) {
-                        $links['dcpp'] = $row['dcpp_link'];
-                    }
-                    
-                    $files[] = array(
-                        'file_id' => $row['file_id'],
-                        'name' => $row['name'],
-                        'size' => $row['size'],
-                        'links' => $links,
-                    );
-                }
-                $film['files'] = $files;
-                if (Lms_Application::getConfig('smb')) {
-                    $mode = $user->getMode();
-                    if (Lms_Application::getConfig('modes', $mode, 'smb')) {
-                        $film['smb'] = 1;
                     }
                 }
                 
+                if (Lms_Application::getConfig('smb')) {
+                    $mode = $user->getMode();
+                    if (Lms_Application::getConfig('modes', $mode, 'smb')) {
+                        $movie['smb'] = 1;
+                    }
+                }
 
-                if ($film["group"]) {
-                    $films = $db->select(
-                        "SELECT ID as film_id, Name as name, "
-                          . "   OriginalName as international_name, "
-                          . "   Year as year, "
-                          . "   CONCAT(BigPosters, '\n', Poster) as `covers` "
-                          . "FROM films "
-                          . "WHERE `Group`=? AND ID!=?d {AND films.Hide=?d} "
-                          . "ORDER BY Year",
-                        $film["group"],
-                        $filmId,
-                        $user->isAllowed("film", "moderate")? DBSIMPLE_SKIP : 0
+                if ($movie["group"]) {
+                    $movies = $db->select(
+                        "SELECT movie_id, name, "
+                          . "   international_name, "
+                          . "   year, "
+                          . "   `covers` "
+                          . "FROM movies "
+                          . "WHERE `group`=? AND movie_id!=?d {AND movies.hidden=?d} "
+                          . "ORDER BY year",
+                        $movie["group"],
+                        $movieId,
+                        $user->isAllowed("movie", "moderate")? DBSIMPLE_SKIP : 0
                     );
-                    Lms_Item_Film::postProcess($films, 90);
-                    $film['other_films'] = $films;
+                    Lms_Item_Movie::postProcess($movies, 90);
+                    $movie['other_movies'] = $movies;
                 }
             } else {
-                $film = null;
+                $movie = null;
             }
-            $result['film'] = $film;
+            $result['movie'] = $movie;
             return new Lms_Api_Response(200, null, $result);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
@@ -619,13 +588,7 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
     {
         try {
             $personId = (int) $params['person_id'];
-            $sql = "SELECT ID as `person_id`, " 
-                 . "    RusName as `name`, " 
-                 . "    OriginalName as `international_name`, " 
-                 . "    Description as `description`, " 
-                 . "    IF(LENGTH(Images)>LENGTH(Photos), Images, Photos) as photos, " 
-                 . "    OzonUrl as `url` " 
-                 . "FROM persones WHERE ID=?d";
+            $sql = "SELECT * FROM persones WHERE person_id=?d";
             $user = Lms_User::getUser();
             $db = Lms_Db::get('main');
 
@@ -633,50 +596,43 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             if (!$person) {
                 return new Lms_Api_Response(404);
             }
-            $person["description"] = Lms_Text::htmlizeText($person["description"]);
+            $person["info"] = Lms_Text::htmlizeText($person["info"]);
 
-            $person["photos"] = preg_split("/(\r\n|\r|\n)/", $person["photos"]);
-            foreach ($person["photos"] as &$photo) {
-                $photo = Lms_Application::thumbnail($photo, $width = 120, $height = 0, $defer = true);
+            $photos = array_values(array_filter(
+                preg_split("/(\r\n|\r|\n)/", $person["photos"])
+            ));
+            $person["photos"] = array();
+            foreach ($photos as $photo) {
+                $person["photos"][] = array(
+                    'original' => Lms_Application::thumbnail($photo, $width = 0, $height = 0, $defer = true, $force = false), 
+                    'thumbnail' => Lms_Application::thumbnail($photo, $width = 0, $height = 190, $defer = true),
+                );
             }
-
+            
             $wheres = array();
-            if (!$user->isAllowed("film", "moderate")) {
-                $wheres[] = " films.Hide=0 ";
+            if (!$user->isAllowed("movie", "moderate")) {
+                $wheres[] = " movies.hidden=0 ";
             }
 
-            $sql = "SELECT DISTINCT filmpersones.FilmID as film_id, "
-                 . "    films.Name as `name`, "
-                 . "    films.Year as `year`, "
-                 . "    CONCAT(films.BigPosters, '\n', films.Poster) as `covers`, "
-                 . "    roles.Role as `role` " 
-                 . "FROM filmpersones INNER JOIN roles ON (filmpersones.RoleID = roles.ID) INNER JOIN films ON (filmpersones.FilmID = films.ID) " 
-                 . "WHERE filmpersones.PersonID=?d " . (count($wheres)? " AND " . implode(' AND ', $wheres) . " " : "") 
-                 . "ORDER BY films.Year, SortOrder";
+            $sql = "SELECT DISTINCT participants.movie_id, "
+                 . "    movies.name, "
+                 . "    `year`, "
+                 . "    `covers`, "
+                 . "    roles.name as `role` " 
+                 . "FROM participants INNER JOIN roles USING(role_id) INNER JOIN movies USING(movie_id) " 
+                 . "WHERE participants.person_id=?d " . (count($wheres)? " AND " . implode(' AND ', $wheres) . " " : "") 
+                 . "ORDER BY year, sort";
 
             $rows = $db->select($sql, $personId);
-            $films = array();
+            $movies = array();
             foreach ($rows as $row) {
-                $filmId = $row['film_id'];
-                $films[$filmId]["film_id"] = $filmId;
-                $films[$filmId]["name"] = $row["name"];
-                $films[$filmId]["year"] = $row["year"];
-                $films[$filmId]["covers"] = $row["covers"];
-                $films[$filmId]["roles"][] = $row["role"];
+                $movieId = $row['movie_id'];
+                $movies[$movieId]["movie_id"] = $movieId;
+                $movies[$movieId]["name"] = $row["name"];
+                $movies[$movieId]["year"] = $row["year"];
+                $movies[$movieId]["roles"][] = $row["role"];
             }
-            /*
-            foreach ($films as &$film) {
-                $covers = array_values(array_filter(
-                    preg_split("/(\r\n|\r|\n)/", $film["covers"])
-                ));
-                $film["cover"] = array_shift($covers);
-                if ($film["cover"]) {
-                    $film["cover"] = Lms_Application::thumbnail($film["cover"], $width = 30, $height = 0);
-                }
-                unset($film["covers"]);
-            }
-            */
-            $person['films'] = array_values($films);
+            $person['movies'] = array_values($movies);
             $result['person'] = $person;
             
             return new Lms_Api_Response(200, null, $result);
@@ -689,33 +645,34 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
     public static function getComments($params)
     {
         try {
-            $filmId = (int) $params['film_id'];
+            $movieId = (int) $params['movie_id'];
             $user = Lms_User::getUser();
             $db = Lms_Db::get('main');
 
             $wheres = array();
-            $wheres[] = "films.ID=?d";
-            $wheres[] = "(ISNULL(ToUserID) OR ToUserID=0 {OR ToUserID=?d OR UserID=?d})";
-            if (!$user->isAllowed("film", "moderate")) {
-                $wheres[] = " films.Hide=0 ";
+            $wheres[] = "movie_id=?d";
+            $wheres[] = "(ISNULL(to_user_id) OR to_user_id=0 {OR to_user_id=?d OR user_id=?d})";
+            if (!$user->isAllowed("movie", "moderate")) {
+                $wheres[] = " m.hidden=0 ";
             }
-            $sql = "SELECT comments.ID as comment_id, "
-                 . "    comments.UserID as user_id, "
+            $sql = "SELECT c.comment_id, "
+                 . "    c.user_id, "
                  . "    users.Login as user_name, "
-                 . "    `Text` as `text`, "
-                 . "    `Date` as `posted_at`, "
+                 . "    `text`, "
+                 . "    c.`created_at`, "
                  . "    u.Login as to_user_name, "
-                 . "    comments.ip as ip "
-                 . "FROM comments "
-                 . "    INNER JOIN films ON (films.ID = comments.FilmID) "
-                 . "    INNER JOIN users ON (users.ID = comments.UserID) "
-                 . "    LEFT JOIN users u ON (u.ID = comments.ToUserID) "
+                 . "    c.ip as ip "
+                 . "FROM comments c "
+                 . "    INNER JOIN movies_comments mc USING(comment_id) "
+                 . "    INNER JOIN movies m USING(movie_id) "
+                 . "    INNER JOIN users ON (users.ID = c.user_id) "
+                 . "    LEFT JOIN users u ON (u.ID = c.to_user_id) "
                  . "WHERE " . implode(' AND ', $wheres) . " "
-                 . "ORDER BY `Date`";
+                 . "ORDER BY `created_at`";
 
             $comments = $db->select(
                 $sql,
-                $filmId,
+                $movieId,
                 $user->getId()? $user->getId() : DBSIMPLE_SKIP,
                 $user->getId()? $user->getId() : DBSIMPLE_SKIP
             );
@@ -728,7 +685,7 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 }
             }
             $result['comments'] = $comments;
-            $result['film_id'] = $filmId;
+            $result['movie_id'] = $movieId;
             return new Lms_Api_Response(200, null, $result);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
@@ -745,43 +702,42 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             if ($cell) {
                 $suggestion = Zend_Json::decode($cell);
             } else {
-                $suggestion = Lms_Application::getSuggestion($query);
+                $suggestion = Lms_Item_Suggestion::getSuggestion($query);
             }
             
-            if ($suggestion['films']) {
-                $sql = "SELECT `ID` as film_id , "
-                     . "    Name as name, "
-                     . "    OriginalName as `international_name`, " 
-                     . "    Year as year, "
-                     . "    CONCAT(BigPosters, '\n', Poster) as `covers` "
-                     . "FROM `films`"
-                     . "WHERE ID IN(?a) "
+            if ($suggestion['movies']) {
+                $sql = "SELECT movie_id , "
+                     . "    name, "
+                     . "    `international_name`, " 
+                     . "    year, "
+                     . "    `covers` "
+                     . "FROM `movies`"
+                     . "WHERE movie_id IN(?a) "
                      . "ORDER BY rank DESC";
-                $films = $db->select($sql, $suggestion['films']);
+                $movies = $db->select($sql, $suggestion['movies']);
 
-                foreach ($films as &$film) {
-                    $film["international_name"] = htmlentities($film["international_name"], ENT_NOQUOTES, 'cp1252');
+                foreach ($movies as &$movie) {
+                    //$movie["international_name"] = htmlentities($movie["international_name"], ENT_NOQUOTES, 'cp1252');
                     $covers = array_values(array_filter(
-                        preg_split("/(\r\n|\r|\n)/", $film["covers"])
+                        preg_split("/(\r\n|\r|\n)/", $movie["covers"])
                     ));
-                    $film["cover"] = array_shift($covers);
-                    if ($film["cover"]) {
-                        $film["cover"] = Lms_Application::thumbnail($film["cover"], $width = 40, $height = 0, $defer = true);
+                    $movie["cover"] = array_shift($covers);
+                    if ($movie["cover"]) {
+                        $movie["cover"] = Lms_Application::thumbnail($movie["cover"], $width = 40, $height = 0, $defer = true);
                     }
-                    unset($film["covers"]);
+                    unset($movie["covers"]);
                 }
             } else {
-                $films = array();
+                $movies = array();
             }
             
             if ($suggestion['persones']) {
-                $sql = "SELECT ID as person_id , "
-                     . "    RusName as `name`, " 
-                     . "    OriginalName as `international_name`, " 
-                     . "    Description as `description`, " 
-                     . "    IF(LENGTH(Images)>LENGTH(Photos), Images, Photos) as photos "
+                $sql = "SELECT person_id , "
+                     . "    `name`, " 
+                     . "    `international_name`, " 
+                     . "    `photos` "
                      . "FROM persones "
-                     . "WHERE ID IN(?a) "
+                     . "WHERE person_id IN(?a) "
                      . "ORDER BY rank DESC";
 
                 $persones = $db->select($sql, $suggestion['persones']);
@@ -799,7 +755,7 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 $persones = array();
             }
             $result['query'] = $query;
-            $result['films'] = $films;
+            $result['movies'] = $movies;
             $result['persones'] = $persones;
             return new Lms_Api_Response(200, null, $result);
         } catch (Exception $e) {
@@ -827,46 +783,46 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                     $trigramCount++;
                 }
                 $wheres[] = "(". implode(' OR ', $wheresLike) .")";
-                $wheres[] = "`type` = 'film'";
-                if (!$user->isAllowed("film", "moderate")) {
-                    $wheres[] = " f.Hide=0 ";
+                $wheres[] = "`type` = 'movie'";
+                if (!$user->isAllowed("movie", "moderate")) {
+                    $wheres[] = " m.hidden=0 ";
                 }
 
-                $sql = "SELECT s.id as film_id, "
-                     . "    Name as name, "
-                     . "    OriginalName as `international_name`, " 
-                     . "    Year as year, "
-                     . "    CONCAT(BigPosters, '\n', Poster) as `covers` "
+                $sql = "SELECT movie_id, "
+                     . "    name, "
+                     . "    `international_name`, " 
+                     . "    year, "
+                     . "    `covers` "
                      . "FROM `search_trigrams` s "
-                     . "INNER JOIN `films` f ON(s.id=f.ID) "
+                     . "INNER JOIN `movies` m ON(s.id=m.movie_id) "
                      . "WHERE " . implode(' AND ', $wheres) . " "
                      . "GROUP BY s.id "
                      . "HAVING count(*)>=?d "
-                     . "ORDER BY count(*) DESC, Rank DESC LIMIT ?d";
-                $films = $db->select($sql, floor(0.66*$trigramCount), 20);
+                     . "ORDER BY count(*) DESC, rank DESC LIMIT ?d";
+                $movies = $db->select($sql, floor(0.66*$trigramCount), 20);
             } else {
                 $wheres = array();
                 $joins = array();
                 foreach ($words as $n => $word) {
                     $table = "s$n";
-                    $joins[] = "INNER JOIN suggestion $table ON ($table.id = f.ID) ";
+                    $joins[] = "INNER JOIN suggestion $table ON ($table.id = m.movie_id) ";
                     $wheres[] = "$table.`word` LIKE '" . mysql_real_escape_string($word) . "%'";
-                    $wheres[] = "$table.`type` = 'film'";
+                    $wheres[] = "$table.`type` = 'movie'";
                 }
-                if (!$user->isAllowed("film", "moderate")) {
-                    $wheres[] = " f.Hide=0 ";
+                if (!$user->isAllowed("movie", "moderate")) {
+                    $wheres[] = " m.hidden=0 ";
                 }
 
-                $sql = "SELECT DISTINCT f.`id` as film_id, "
-                     . "    Name as name, "
-                     . "    OriginalName as `international_name`, " 
-                     . "    Year as year, "
-                     . "    CONCAT(BigPosters, '\n', Poster) as `covers` "
-                     . "FROM `films` f "
+                $sql = "SELECT DISTINCT movie_id, "
+                     . "    name, "
+                     . "    `international_name`, " 
+                     . "    year, "
+                     . "    `covers` "
+                     . "FROM `movies` f "
                      . implode(' ', $joins) . " "
                      . "WHERE " . implode(' AND ', $wheres) . " "
                      . "ORDER BY rank DESC LIMIT ?d";
-                $films = $db->select($sql, 20);
+                $movies = $db->select($sql, 20);
             }
           
             if ($queryLength>=3) {
@@ -881,33 +837,33 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 $wheres[] = "(". implode(' OR ', $wheresLike) .")";
                 $wheres[] = "`type` = 'person'";
 
-                $sql = "SELECT p.ID as person_id , "
-                     . "    RusName as `name`, " 
-                     . "    OriginalName as `international_name`, " 
-                     . "    Description as `description`, " 
-                     . "    IF(LENGTH(Images)>LENGTH(Photos), Images, Photos) as photos "
+                $sql = "SELECT person_id , "
+                     . "    `name`, " 
+                     . "    `international_name`, " 
+                     . "    `info`, " 
+                     . "    `photos` "
                      . "FROM `search_trigrams` s "
-                     . "INNER JOIN `persones` p ON(s.id=p.ID) "
+                     . "INNER JOIN `persones` p ON(s.id=p.person_id) "
                      . "WHERE " . implode(' AND ', $wheres) . " "
-                     . "GROUP BY p.id "
+                     . "GROUP BY person_id "
                      . "HAVING count(*)>=?d "
-                     . "ORDER BY count(*) DESC, Rank DESC LIMIT ?d";
+                     . "ORDER BY count(*) DESC, rank DESC LIMIT ?d";
                 $persones = $db->select($sql, floor(0.66*$trigramCount), 20);
             } else {
                 $wheres = array();
                 $joins = array();
                 foreach ($words as $n => $word) {
                     $table = "s$n";
-                    $joins[] = "INNER JOIN suggestion $table ON ($table.id = p.ID) ";
+                    $joins[] = "INNER JOIN suggestion $table ON ($table.id = p.person_id) ";
                     $wheres[] = "$table.`word` LIKE '" . mysql_real_escape_string($word) . "%'";
                     $wheres[] = "$table.`type` = 'person'";
                 }
 
-                $sql = "SELECT p.ID as person_id , "
-                     . "    RusName as `name`, " 
-                     . "    OriginalName as `international_name`, " 
-                     . "    Description as `description`, " 
-                     . "    IF(LENGTH(Images)>LENGTH(Photos), Images, Photos) as photos "
+                $sql = "SELECT person_id , "
+                     . "    `name`, " 
+                     . "    `international_name`, " 
+                     . "    `description`, " 
+                     . "    `photos` "
                      . "FROM persones p "
                      . implode(' ', $joins) . " "
                      . "WHERE " . implode(' AND ', $wheres) . " "
@@ -915,10 +871,10 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 $persones = $db->select($sql, 20);
             }
             
-            $result['films'] = array();
-            foreach ($films as $film) {
-                if (self::matchStrings($query, $film['name']) || self::matchStrings($query, $film['international_name'])) {
-                    $result['films'][] = $film;
+            $result['movies'] = array();
+            foreach ($movies as $movie) {
+                if (self::matchStrings($query, $movie['name']) || self::matchStrings($query, $movie['international_name'])) {
+                    $result['movies'][] = $movie;
                 }
             }
             $result['persones'] = array();
@@ -928,16 +884,16 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 }
             }
             
-            foreach ($result['films'] as &$film) {
-                $film["international_name"] = htmlentities($film["international_name"], ENT_NOQUOTES, 'cp1252');
+            foreach ($result['movies'] as &$movie) {
+                //$movie["international_name"] = htmlentities($movie["international_name"], ENT_NOQUOTES, 'cp1252');
                 $covers = array_values(array_filter(
-                    preg_split("/(\r\n|\r|\n)/", $film["covers"])
+                    preg_split("/(\r\n|\r|\n)/", $movie["covers"])
                 ));
-                $film["cover"] = array_shift($covers);
-                if ($film["cover"]) {
-                    $film["cover"] = Lms_Application::thumbnail($film["cover"], $width = 40, $height = 0, $defer = true);
+                $movie["cover"] = array_shift($covers);
+                if ($movie["cover"]) {
+                    $movie["cover"] = Lms_Application::thumbnail($movie["cover"], $width = 40, $height = 0, $defer = true);
                 }
-                unset($film["covers"]);
+                unset($movie["covers"]);
             }
             
             foreach ($result['persones'] as &$person) {
@@ -962,32 +918,32 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
         try {
             $db = Lms_Db::get('main');
             
-            $bestsellers = $db->select('SELECT category_id, name, films FROM `bestsellers` ORDER BY rank DESC');
+            $bestsellers = $db->select('SELECT category_id, name, movies FROM `bestsellers` ORDER BY rank DESC');
             foreach ($bestsellers as &$bestseller) {
-                $filmsIds = Zend_Json::decode($bestseller['films']);
+                $moviesIds = Zend_Json::decode($bestseller['movies']);
 
-                $sql = "SELECT `ID` as film_id , "
-                     . "    Name as name, "
-                     . "    OriginalName as `international_name`, " 
-                     . "    Year as year, "
-                     . "    CONCAT(BigPosters, '\n', Poster) as `covers` "
-                     . "FROM `films`"
-                     . "WHERE ID IN(?a) "
+                $sql = "SELECT movie_id , "
+                     . "    `name`, "
+                     . "    `international_name`, " 
+                     . "    `year`, "
+                     . "    `covers` "
+                     . "FROM `movies`"
+                     . "WHERE movie_id IN(?a) "
                      . "ORDER BY rank DESC";
-                $films = $db->select($sql, $filmsIds);
+                $movies = $db->select($sql, $moviesIds);
 
-                foreach ($films as &$film) {
-                    $film["international_name"] = htmlentities($film["international_name"], ENT_NOQUOTES, 'cp1252');
+                foreach ($movies as &$movie) {
+                    //$movie["international_name"] = htmlentities($movie["international_name"], ENT_NOQUOTES, 'cp1252');
                     $covers = array_values(array_filter(
-                        preg_split("/(\r\n|\r|\n)/", $film["covers"])
+                        preg_split("/(\r\n|\r|\n)/", $movie["covers"])
                     ));
-                    $film["cover"] = array_shift($covers);
-                    if ($film["cover"]) {
-                        $film["cover"] = Lms_Application::thumbnail($film["cover"], $width = 120, $height = 0, $defer = true);
+                    $movie["cover"] = array_shift($covers);
+                    if ($movie["cover"]) {
+                        $movie["cover"] = Lms_Application::thumbnail($movie["cover"], $width = 120, $height = 0, $defer = true);
                     }
-                    unset($film["covers"]);
+                    unset($movie["covers"]);
                 }
-                $bestseller['films'] = $films;
+                $bestseller['movies'] = $movies;
             }
             $result['bestsellers'] = $bestsellers;
             return new Lms_Api_Response(200, null, $result);
@@ -1093,13 +1049,13 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             if (!$user->isAllowed("bookmark", "add")) {
                 return new Lms_Api_Response(403, 'Forbidden');
             }
-            $filmId = $params['film_id'];
-            $film = $db->select("SELECT * FROM films WHERE ID=?d", $filmId);
-            if ($film) {
-                $db->query(
-                    "INSERT INTO bookmarks(UserID,TypeOfEntity,EntityID) VALUES(?d,1,?d)",
-                    $user->getId(), $filmId
-                );
+            $movieId = $params['movie_id'];
+            
+            $movie = Lms_Item::create('Movie', $movieId);
+            if ($movie) {
+                $bookmark = Lms_Item::create('Bookmark');
+                $bookmark->setMovieId($movie->getId())
+                         ->save();
                 return self::getBookmarks();
             }
             
@@ -1120,9 +1076,8 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             if (!$user->isAllowed("bookmark", "delete")) {
                 return new Lms_Api_Response(403, 'Forbidden');
             }
-            $filmId = $params['film_id'];
-            $sql = "DELETE FROM bookmarks WHERE UserID=?d AND TypeOfEntity=1 AND EntityID=?d";
-            $db->query($sql, $user->getId(), $filmId);
+            $movieId = $params['movie_id'];
+            Lms_Item_Bookmark::deleteBookmark($movieId);
             return new Lms_Api_Response(200);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
@@ -1141,27 +1096,27 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 return new Lms_Api_Response(403, 'Forbidden');
             }
             
-            $sql = "SELECT EntityID as film_id, "
-                 . "    Name as name, "
-                 . "    OriginalName as `international_name`, " 
-                 . "    Year as year, "
-                 . "    CONCAT(BigPosters, '\n', Poster) as `covers` "
-                 . "FROM bookmarks INNER JOIN films ON (films.ID = EntityID) " 
-                 . "WHERE TypeOfEntity=1 AND UserID=?d ORDER BY bookmarks.ID DESC";
-            $films = $db->select($sql, $user->getId());
+            $sql = "SELECT movie_id, "
+                 . "    `name`, "
+                 . "    `international_name`, " 
+                 . "    `year`, "
+                 . "    `covers` "
+                 . "FROM bookmarks INNER JOIN movies USING(movie_id) " 
+                 . "WHERE user_id=?d ORDER BY bookmark_id DESC";
+            $movies = $db->select($sql, $user->getId());
             
-            foreach ($films as &$film) {
-                $film["international_name"] = htmlentities($film["international_name"], ENT_NOQUOTES, 'cp1252');
-                $covers = array_values(array_filter(
-                    preg_split("/(\r\n|\r|\n)/", $film["covers"])
+            foreach ($movies as &$movie) {
+                //$movie["international_name"] = htmlentities($movie["international_name"], ENT_NOQUOTES, 'cp1252');
+                $cover = array_values(array_filter(
+                    preg_split("/(\r\n|\r|\n)/", $movie["covers"])
                 ));
-                $film["cover"] = array_shift($covers);
-                if ($film["cover"]) {
-                    $film["cover"] = Lms_Application::thumbnail($film["cover"], $width = 16, $height = 0, $defer = true);
+                $movie["cover"] = array_shift($cover);
+                if ($movie["cover"]) {
+                    $movie["cover"] = Lms_Application::thumbnail($movie["cover"], $width = 16, $height = 0, $defer = true, $force = false);
                 }
-                unset($film["covers"]);
+                unset($movie["covers"]);
             }
-            $result['films'] = $films;
+            $result['movies'] = $movies;
             return new Lms_Api_Response(200, null, $result);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
@@ -1178,21 +1133,16 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 return new Lms_Api_Response(403, 'Forbidden');
             }
             
-            $filmId = $params['film_id'];
+            $movieId = $params['movie_id'];
             $text = trim($params['text']);
             
-            $film = $db->select("SELECT * FROM films WHERE ID=?d", $filmId);
-            if ($film && $text) {
-                $db->query(
-                    "INSERT INTO comments SET UserID=?, FilmID=?d, Text=?, `Date`=NOW(), `ip`=?",
-                    $user->getId(), 
-                    $filmId,
-                    $text,
-                    Lms_Ip::getIp()
-                );
-                return self::getComments(array('film_id'=>$filmId));
+            if ($text && $movieId) {
+                $comment = Lms_Item::create('Comment');
+                $comment->setText($text);
+                $movie = Lms_Item::create('Movie', $movieId);
+                $movie->add($comment);
             }
-            return new Lms_Api_Response(503);
+            return self::getComments(array('movie_id'=>$movieId));
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
         }
@@ -1208,11 +1158,11 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             }
             $commentId = $params['comment_id'];
             $text = trim($params['text']);
-            $db->query(
-                "UPDATE comments SET Text=? WHERE ID=?d",
-                $text,
-                $commentId
-            );
+
+            $comment = Lms_Item::create('Comment', $commentId);
+            $comment->setText($text)
+                    ->save();
+
             return new Lms_Api_Response(200);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
@@ -1229,7 +1179,8 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
             }
             
             $commentId = $params['comment_id'];
-            $db->query("DELETE FROM comments WHERE ID=?d", $commentId);
+            $comment = Lms_Item::create('Comment', $commentId);
+            $comment->delete();
             return new Lms_Api_Response(200);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
@@ -1246,30 +1197,20 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 return new Lms_Api_Response(403, 'Forbidden');
             }
 
-            $filmId = $params['film_id'];
+            $movieId = $params['movie_id'];
             $rating = $params['rating'];
-            if ($filmId && ($rating>0) && ($rating<=10)){
-                $film = $db->selectRow("SELECT ID FROM films WHERE ID=?d", $filmId);
-                if ($film){
-                    $sql = "INSERT INTO userfilmratings SET UserID=?d, FilmID=?d, Rating=?d, `Date`=NOW() ON DUPLICATE KEY UPDATE Rating=?d, `Date`=NOW()";
-                    $db->query(
-                        $sql,
-                        $user->getId(),
-                        $filmId,
-                        $rating,
-                        $rating
-                    );
+            if ($movieId && ($rating>0) && ($rating<=10)){
+                $movie = Lms_Item::create('Movie', $movieId);
+                if ($movie){
+                    Lms_Item_MovieUserRating::replaceRating($movieId, $rating);
                 }
-            } else if ($filmId && $rating==0) {
-                $db->query(
-                    'DELETE FROM userfilmratings WHERE UserID=?d AND FilmID=?d',
-                    $user->getId(),
-                    $filmId
-                );
+            } else if ($movieId && $rating==0) {
+                Lms_Item_MovieUserRating::deleteRating($movieId);
             }
-            $localRating = Lms_Item_Film::updateLocalRating($filmId);
+            $localRating = Lms_Item_Movie::updateLocalRating($movieId);
+            
             $result = array(
-                'rating_local_value' => $localRating['bayes'] ? round($localRating['bayes'],1) : null,
+                'rating_local_value' => $localRating['bayes'] ? str_replace(",", ".", strval($localRating['bayes'])) : null,
                 'rating_local_count' => $localRating['count'],
                 'rating_local_detail' => $localRating['detail'],
                 'rating_personal_value' => $rating
@@ -1281,18 +1222,21 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
         }
     }
 
-    public static function setFilmField($params)
+    public static function setMovieField($params)
     {
         try {
             $db = Lms_Db::get('main');
             $user = Lms_User::getUser();
-            if (!$user->isAllowed("film", "moderate")) {
+            if (!$user->isAllowed("movie", "moderate")) {
                 return new Lms_Api_Response(403);
             }
-            $filmId = $params['film_id'];
+            $movieId = $params['movie_id'];
             $field = $params['field'];
             $value = $params['value'];
-            $db->query('UPDATE films SET ?#=? WHERE ID=?d', $field, $value, $filmId);
+            $movie = Lms_Item::create('Movie', $movieId);
+            call_user_func(array($movie, "set$field"), $value);
+            $movie->save();
+            
             return new Lms_Api_Response(200);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());
@@ -1310,29 +1254,12 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
         }
     }
 
-    public static function sendOpinion($params)
+    public static function hitMovie($params)
     {
         try {
             $db = Lms_Db::get('main');
-            $text = trim($params['text']);
-            $db->query(
-                'INSERT INTO opinions SET `ip`=?, `text`=?, posted_at=NOW(), user_agent=?', 
-                Lms_Ip::getIp(), 
-                $text,
-                $_SERVER['HTTP_USER_AGENT']
-            );
-            return new Lms_Api_Response(200);
-        } catch (Exception $e) {
-            return new Lms_Api_Response(500, $e->getMessage());
-        }
-    }
-    
-    public static function hitFilm($params)
-    {
-        try {
-            $db = Lms_Db::get('main');
-            $filmId = (int) $params['film_id'];
-            Lms_Application::hitFilm($filmId);
+            $movieId = (int) $params['movie_id'];
+            Lms_Item_Movie::hitMovie($movieId);
             return new Lms_Api_Response(200);
         } catch (Exception $e) {
             return new Lms_Api_Response(500, $e->getMessage());

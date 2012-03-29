@@ -1,742 +1,268 @@
-CREATE TABLE `autouserfilmratings` (
-  `FilmID` int(11) NOT NULL DEFAULT '0',
-  `UserID` int(11) NOT NULL DEFAULT '0',
-  `Rating` tinyint(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`FilmID`,`UserID`)
-) TYPE=MyISAM;
-
-
 CREATE TABLE `bestsellers` (
   `category_id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `films` text NOT NULL,
+  `movies` text NOT NULL,
   `rank` int(11) NOT NULL,
   PRIMARY KEY (`category_id`)
-) TYPE=MyISAM;
-
-
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `bookmarks` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `UserID` int(11) NOT NULL DEFAULT '0',
-  `TypeOfEntity` tinyint(4) NOT NULL DEFAULT '0',
-  `EntityID` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`ID`),
-  UNIQUE KEY `uniq` (`UserID`,`TypeOfEntity`,`EntityID`),
-  KEY `UserID` (`UserID`),
-  KEY `EntityID` (`EntityID`)
-) TYPE=MyISAM;
-
-
+  `bookmark_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL DEFAULT '0',
+  `movie_id` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`bookmark_id`),
+  UNIQUE KEY `user_id` (`user_id`,`movie_id`),
+  KEY `UserID` (`user_id`),
+  KEY `EntityID` (`movie_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `comments` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `FilmID` int(11) NOT NULL DEFAULT '0',
-  `UserID` int(11) NOT NULL DEFAULT '0',
-  `ToUserID` int(11) DEFAULT '0',
-  `Text` text NOT NULL,
-  `Date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `comment_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL DEFAULT '0',
+  `to_user_id` int(11) DEFAULT '0',
+  `text` text NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `ip` varchar(15) DEFAULT NULL,
-  PRIMARY KEY (`ID`),
-  KEY `FilmID` (`FilmID`),
-  KEY `UserID` (`UserID`),
-  KEY `ToUserID` (`ToUserID`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `companies` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(100) NOT NULL DEFAULT '',
-  PRIMARY KEY (`ID`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `counter_archive` (
-  `UserID` int(11) NOT NULL DEFAULT '0',
-  `UseDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `Bytes` bigint(20) NOT NULL DEFAULT '0'
-) TYPE=MyISAM;
-
-
-CREATE TABLE `counter_daily` (
-  `UserID` int(11) NOT NULL DEFAULT '0',
-  `MinOfDay` int(11) NOT NULL DEFAULT '0',
-  `Bytes` int(11) NOT NULL DEFAULT '0',
-  UNIQUE KEY `UserID` (`UserID`,`MinOfDay`)
-) TYPE=MyISAM;
-
-
+  PRIMARY KEY (`comment_id`),
+  KEY `UserID` (`user_id`),
+  KEY `ToUserID` (`to_user_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `countries` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `imdbCountry` varchar(100) NOT NULL DEFAULT '',
-  `Name` varchar(100) NOT NULL DEFAULT '',
-  PRIMARY KEY (`ID`),
-  UNIQUE KEY `imdbCountry` (`imdbCountry`)
-) TYPE=MyISAM;
-
-INSERT INTO `countries` (`ID`, `imdbCountry`, `Name`) VALUES
-(1, 'France', 'Франция'),
-(2, 'UK', 'Великобритания'),
-(3, 'USA', 'США'),
-(4, 'Soviet Union', 'СССР'),
-(5, 'Romania', 'Румыния'),
-(6, 'Switzerland', 'Швейцария'),
-(7, 'Russia', 'Россия'),
-(8, 'Australia', 'Австралия'),
-(9, 'West Germany', 'ФРГ'),
-(10, 'Thailand', 'Тайланд'),
-(11, 'China', 'Китай'),
-(12, 'Hong Kong', 'Гонгконг'),
-(13, 'Mexico', 'Мексика'),
-(14, 'Italy', 'Италия'),
-(15, 'Spain', 'Испания'),
-(16, 'Germany', 'Германия'),
-(17, 'Japan', 'Япония'),
-(18, 'Canada', 'Канада'),
-(19, 'South Korea', 'Южная Корея'),
-(20, 'Netherlands', 'Нидерланды'),
-(21, 'Taiwan', 'Тайвань'),
-(22, 'Hungary', 'Венгрия'),
-(23, 'Ireland', 'Ирландия'),
-(24, 'Poland', 'Польша'),
-(25, 'Czech Republic', 'Чехия'),
-(26, 'Denmark', 'Дания'),
-(27, 'Sweden', 'Швеция'),
-(28, 'Norway', 'Норвегия'),
-(29, 'Finland', 'Финляндия'),
-(30, 'New Zealand', 'Новая Зеландия'),
-(31, 'South Africa', 'ЮАР'),
-(32, 'Ukraine', 'Украина'),
-(33, 'Belgium', 'Бельгия'),
-(34, 'Luxembourg', 'Люксембург'),
-(35, 'Croatia', 'Хорватия'),
-(36, 'Israel', 'Израиль'),
-(37, '', 'Не определена'),
-(38, 'Bulgaria', 'Болгария'),
-(39, 'Turkey', 'Турция'),
-(40, 'Malta', 'Мальта'),
-(41, 'Bosnia-Herzegovina', 'Босния-Герцеговина'),
-(42, 'Slovenia', 'Словения'),
-(43, 'Greece', 'Греция'),
-(44, 'East Germany', 'ГДР'),
-(45, 'Slovakia', 'Словакия'),
-(46, 'Singapore', 'Сингапур'),
-(47, 'Austria', 'Австрия'),
-(48, 'Afghanistan', 'Афганистан'),
-(49, 'Albania', 'Албания'),
-(50, 'Algeria', 'Алжир'),
-(51, 'Andorra', 'Андорра'),
-(52, 'Angola', 'Ангола'),
-(53, 'Antigua and Barbuda', 'Антигуа и Барбуда'),
-(54, 'Argentina', 'Аргентина'),
-(55, 'Armenia', 'Армения'),
-(56, 'Azerbaijan', 'Азербайджан'),
-(57, 'Bahamas', 'Багамские Острова'),
-(58, 'Bahrain', 'Бахрейн'),
-(59, 'Bangladesh', 'Бангладеш'),
-(60, 'Barbados', 'Барбадос'),
-(61, 'Belarus', 'Беларусь'),
-(62, 'Belize', 'Белиз'),
-(63, 'Benin', 'Бенин'),
-(64, 'Bhutan', 'Бутан'),
-(65, 'Bolivia', 'Боливия'),
-(66, 'Botswana', 'Ботсвана'),
-(67, 'Brazil', 'Бразилия'),
-(68, 'Burkina Faso', 'Буркина-Фасо'),
-(69, 'Burma', 'Бирма'),
-(70, 'Burundi', 'Бурунди'),
-(71, 'Cambodia', 'Камбоджа'),
-(72, 'Cameroon', 'Камерун'),
-(73, 'Cape Verde', 'Зеленый мыс'),
-(74, 'Central African Republic', 'Центрально-африканская Республика'),
-(75, 'Chad', 'Чад'),
-(76, 'Chile', 'Чили'),
-(77, 'Colombia', 'Колумбия'),
-(78, 'Congo', 'Конго'),
-(79, 'Costa Rica', 'Коста Рика'),
-(80, 'Cuba', 'Куба'),
-(81, 'Cyprus', 'Кипр'),
-(82, 'Czechoslovakia', 'Чехословакия'),
-(83, 'Djibouti', 'Джибути'),
-(84, 'Dominican Republic', 'Доминиканская Республика'),
-(85, 'Ecuador', 'Эквадор'),
-(86, 'Egypt', 'Египет'),
-(87, 'El Salvador', 'Сальвадор'),
-(88, 'Eritrea', 'Эритрея'),
-(89, 'Estonia', 'Эстония'),
-(90, 'Ethiopia', 'Эфиопия'),
-(91, 'Faroe Islands', 'Фарерские острова'),
-(92, 'Federal Republic of Yugoslavia', 'Федеральная Республика Югославии'),
-(93, 'Fiji', 'Фиджи'),
-(94, 'Gabon', 'Габон'),
-(95, 'Georgia', 'Джорджия'),
-(96, 'Ghana', 'Гана'),
-(97, 'Greenland', 'Гренландия'),
-(98, 'Guadeloupe', 'Гваделупа'),
-(99, 'Guatemala', 'Гватемала'),
-(100, 'Guinea', 'Гвинея'),
-(101, 'Guinea-Bissau', 'Гвинея-Биссау'),
-(102, 'Guyana', 'Гайана'),
-(103, 'Haiti', 'Гаити'),
-(104, 'Honduras', 'Гондурас'),
-(105, 'Iceland', 'Исландия'),
-(106, 'India', 'Индия'),
-(107, 'Indonesia', 'Индонезия'),
-(108, 'Iran', 'Иран'),
-(109, 'Iraq', 'Ирак'),
-(110, 'Ivory Coast', 'Берег Слоновой Кости'),
-(111, 'Jamaica', 'Ямайка'),
-(112, 'Jordan', 'Иордания'),
-(113, 'Kazakhstan', 'Казахстан'),
-(114, 'Kenya', 'Кения'),
-(115, 'Korea', 'Корея'),
-(116, 'Kosovo', 'Косово'),
-(117, 'Kuwait', 'Кувейт'),
-(118, 'Kyrgyzstan', 'Кыргызстан'),
-(119, 'Laos', 'Лаос'),
-(120, 'Latvia', 'Латвия'),
-(121, 'Lebanon', 'Ливан'),
-(122, 'Liberia', 'Либерия'),
-(123, 'Libya', 'Ливия'),
-(124, 'Liechtenstein', 'Лихтенштейн'),
-(125, 'Lithuania', 'Литва'),
-(126, 'Macau', 'Макао'),
-(127, 'Madagascar', 'Мадагаскар'),
-(128, 'Malaysia', 'Малайзия'),
-(129, 'Mali', 'Мали'),
-(130, 'Martinique', 'Мартиник'),
-(131, 'Mauritania', 'Мавритания'),
-(132, 'Mauritius', 'Маврикий'),
-(133, 'Moldova', 'Молдова'),
-(134, 'Monaco', 'Монако'),
-(135, 'Mongolia', 'Монголия'),
-(136, 'Morocco', 'Марокко'),
-(137, 'Mozambique', 'Мозамбик'),
-(138, 'Namibia', 'Намибия'),
-(139, 'Nepal', 'Непал'),
-(140, 'Nicaragua', 'Никарагуа'),
-(141, 'Niger', 'Нигер'),
-(142, 'Nigeria', 'Нигерия'),
-(143, 'North Korea', 'Северная Корея'),
-(144, 'North Vietnam', 'Северный Вьетнам'),
-(145, 'Pakistan', 'Пакистан'),
-(146, 'Palestine', 'Палестина'),
-(147, 'Panama', 'Панама'),
-(148, 'Papua New Guinea', 'Папуа Новая Гвинея'),
-(149, 'Paraguay', 'Парагвай'),
-(150, 'Peru', 'Перу'),
-(151, 'Philippines', 'Филиппины'),
-(152, 'Portugal', 'Португалия'),
-(153, 'Puerto Rico', 'Пуэрто-Рико'),
-(154, 'Republic of Macedonia', 'Республика Македония'),
-(155, 'Rwanda', 'Руанда'),
-(156, 'San Marino', 'Сан-Марино'),
-(157, 'Saudi Arabia', 'Саудовская Аравия'),
-(158, 'Senegal', 'Сенегал'),
-(159, 'Serbia and Montenegro', 'Сербия и Черногория'),
-(160, 'Seychelles', 'Сейшельские Острова'),
-(161, 'Siam', 'Сиам'),
-(162, 'Somalia', 'Сомали'),
-(163, 'Sri Lanka', 'Шри Ланка'),
-(164, 'Sudan', 'Судан'),
-(165, 'Suriname', 'Суринами'),
-(166, 'Syria', 'Сирия'),
-(167, 'Tajikistan', 'Таджикистан'),
-(168, 'Tanzania', 'Танзания'),
-(169, 'Togo', 'Того'),
-(170, 'Tonga', 'Тонга'),
-(171, 'Trinidad And Tobago', 'Тринидад и Тобаго'),
-(172, 'Tunisia', 'Тунис'),
-(173, 'Turkmenistan', 'Туркменистан'),
-(174, 'Uganda', 'Уганда'),
-(175, 'United Arab Emirates', 'Объединенные Арабские Эмираты'),
-(176, 'Uruguay', 'Уругвай'),
-(177, 'Uzbekistan', 'Узбекистан'),
-(178, 'Venezuela', 'Венесуэлла'),
-(179, 'Vietnam', 'Вьетнам'),
-(180, 'Western Sahara', 'Западная Сахара'),
-(181, 'Yemen', 'Йемен'),
-(182, 'Yugoslavia', 'Югославия'),
-(183, 'Zaire', 'Заир'),
-(184, 'Zambia', 'Замбия'),
-(185, 'Zimbabwe', 'Зимбабве');
-
+  `country_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`country_id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `files` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `Marked` tinyint(4) NOT NULL DEFAULT '0',
-  `FilmID` int(11) NOT NULL DEFAULT '0',
-  `Name` varchar(100) NOT NULL DEFAULT '',
-  `MD5` varchar(32) NOT NULL DEFAULT '',
-  `Path` varchar(255) NOT NULL DEFAULT '',
-  `Size` bigint(20) NOT NULL DEFAULT '0',
-  `ed2kLink` varchar(255) NOT NULL DEFAULT '',
-  `dcppLink` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`ID`),
-  KEY `FilmID` (`FilmID`),
-  KEY `iPath` (`Path`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `filmcompanies` (
-  `FilmID` int(11) NOT NULL DEFAULT '0',
-  `CompanyID` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`FilmID`,`CompanyID`),
-  KEY `FilmID` (`FilmID`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `filmcountries` (
-  `FilmID` int(11) NOT NULL DEFAULT '0',
-  `CountryID` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`FilmID`,`CountryID`),
-  KEY `FilmID` (`FilmID`),
-  KEY `CountryID` (`CountryID`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `filmgenres` (
-  `GenreID` int(11) NOT NULL DEFAULT '0',
-  `FilmID` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`GenreID`,`FilmID`),
-  KEY `FilmID` (`FilmID`),
-  KEY `GenreID` (`GenreID`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `filmpersones` (
-  `FilmID` int(11) NOT NULL DEFAULT '0',
-  `RoleID` int(11) NOT NULL DEFAULT '0',
-  `RoleExt` varchar(100) NOT NULL DEFAULT '',
-  `PersonID` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`FilmID`,`PersonID`,`RoleID`),
-  KEY `FilmID` (`FilmID`),
-  KEY `RoleID` (`RoleID`),
-  KEY `PersonID` (`PersonID`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `films` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(255) NOT NULL DEFAULT '',
-  `OriginalName` varchar(255) NOT NULL DEFAULT '',
-  `Description` text NOT NULL,
-  `Year` varchar(18) NOT NULL DEFAULT '',
-  `Runtime` int(11) NOT NULL DEFAULT '0',
-  `CreateDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `UpdateDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `VideoInfo` text NOT NULL,
-  `AudioInfo` text NOT NULL,
-  `Translation` varchar(255) NOT NULL DEFAULT '',
-  `Quality` varchar(100) NOT NULL DEFAULT '',
-  `imdbID` varchar(100) NOT NULL DEFAULT '',
-  `ImdbRating` int(11) NOT NULL DEFAULT '0',
-  `LocalRating` int(11) NOT NULL DEFAULT '0',
-  `CountLocalRating` int(11) NOT NULL DEFAULT '0',
-  `MPAA` varchar(255) NOT NULL DEFAULT '',
-  `Resolution` varchar(18) NOT NULL DEFAULT '',
-  `Validity` int(11) NOT NULL DEFAULT '0',
-  `Poster` text NOT NULL,
-  `SmallPoster` text NOT NULL,
-  `BigPosters` text NOT NULL,
-  `Trailer` varchar(255) NOT NULL DEFAULT '',
-  `Hide` tinyint(4) NOT NULL DEFAULT '0',
-  `Hit` int(11) NOT NULL DEFAULT '0',
-  `TypeOfMovie` varchar(255) NOT NULL DEFAULT '',
-  `Moderator` int(11) DEFAULT NULL,
-  `AsDir` tinyint(4) DEFAULT '0',
-  `SoundTrack` varchar(255) NOT NULL DEFAULT '',
-  `Links` text,
-  `Present` varchar(255) NOT NULL DEFAULT '',
-  `Group` varchar(255) NOT NULL DEFAULT '',
-  `Frames` text,
-  `SmallFrames` text,
-  `LocalRatingDetail` varchar(255) NOT NULL DEFAULT '',
-  `ImdbRatingDetail` varchar(255) NOT NULL DEFAULT '',
-  `Rank` float NOT NULL DEFAULT '0',
-  PRIMARY KEY (`ID`),
-  KEY `iCreateDate` (`CreateDate`),
-  KEY `iName` (`Name`),
-  KEY `iOriginalName` (`OriginalName`),
-  KEY `iYear` (`Year`),
-  KEY `iHit` (`Hit`),
-  KEY `Rank` (`Rank`),
-  KEY `Hide` (`Hide`)
-) TYPE=MyISAM;
-
-
+  `file_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `path` varchar(255) NOT NULL,
+  `is_dir` tinyint(4) NOT NULL DEFAULT '0',
+  `size` double NOT NULL DEFAULT '0',
+  `md5_hash` varchar(32) NOT NULL,
+  `metainfo` blob,
+  `translation` varchar(255) NOT NULL DEFAULT '',
+  `quality` varchar(100) NOT NULL DEFAULT '',
+  `frames` blob,
+  `tth_hash` varchar(40) NOT NULL,
+  `tries` tinyint(4) NOT NULL DEFAULT '0',
+  `active` tinyint(4) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`file_id`),
+  KEY `iPath` (`path`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `files_lost` (
+  `file_id` int(11) NOT NULL,
+  `path` varchar(255) NOT NULL,
+  PRIMARY KEY (`file_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `files_tasks` (
+  `file_task_id` int(11) NOT NULL AUTO_INCREMENT,
+  `from` varchar(255) NOT NULL,
+  `to` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `tries` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`file_task_id`),
+  KEY `from` (`from`),
+  KEY `to` (`to`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `genres` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `imdbGenre` varchar(18) NOT NULL DEFAULT '',
-  `Name` varchar(100) NOT NULL DEFAULT '',
-  PRIMARY KEY (`ID`)
-) TYPE=MyISAM;
-
-INSERT INTO `genres` (`ID`, `imdbGenre`, `Name`) VALUES
-(1, 'Crime', 'Криминал'),
-(2, 'Drama', 'Драма'),
-(3, 'Thriller', 'Триллер'),
-(4, 'Comedy', 'Комедия'),
-(5, 'Sci-Fi', 'Фантастика'),
-(6, 'Action', 'Боевик'),
-(7, 'Horror', 'Ужасы'),
-(8, 'Mystery', 'Мистика'),
-(9, 'Music', 'Музыка'),
-(10, 'Fantasy', 'Фэнтази'),
-(11, 'Western', 'Вестерн'),
-(12, 'Adventure', 'Приключения'),
-(13, 'Animation', 'Мультфильм'),
-(15, 'Family', 'Семейный'),
-(16, 'Sport', 'Спорт'),
-(17, 'Romance', 'Мелодрама'),
-(18, 'War', 'Война'),
-(19, 'History', 'История'),
-(20, 'Biography', 'Биография'),
-(21, 'Short', 'Короткометражный'),
-(22, 'Musical', 'Мьюзикл'),
-(23, 'Documentary', 'Документальный'),
-(24, 'Talk-Show', 'Разговорное шоу'),
-(25, 'Anime', 'Аниме'),
-(26, 'Film-Noir', 'Черно-белый'),
-(27, 'Game-Show', 'Игровое шоу'),
-(28, 'News', 'Новости'),
-(29, 'Reality-TV', 'Реал-ТВ'),
-(30, 'Goblin', 'Гоблин');
-
+  `genre_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`genre_id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `hits` (
-  `FilmID` int(11) NOT NULL DEFAULT '0',
-  `UserID` int(11) NOT NULL DEFAULT '0',
-  `DateHit` datetime DEFAULT NULL,
-  PRIMARY KEY (`FilmID`,`UserID`),
-  KEY `FilmID` (`FilmID`),
-  KEY `UserID` (`UserID`)
-) TYPE=MyISAM;
-
-
+  `hit_id` int(11) NOT NULL AUTO_INCREMENT,
+  `movie_id` int(11) NOT NULL DEFAULT '0',
+  `user_id` int(11) NOT NULL DEFAULT '0',
+  `ip` varchar(15) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`hit_id`),
+  UNIQUE KEY `movie_id` (`movie_id`,`user_id`,`ip`),
+  KEY `FilmID` (`movie_id`),
+  KEY `UserID` (`user_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `incoming` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `Path` text NOT NULL,
-  `Resolution` varchar(18) NOT NULL DEFAULT '',
-  `VideoInfo` text NOT NULL,
-  `AudioInfo` text NOT NULL,
-  `Runtime` int(11) NOT NULL DEFAULT '0',
-  `EngName` varchar(100) NOT NULL DEFAULT '',
-  `RusName` varchar(100) NOT NULL DEFAULT '',
-  `RusVariants` text NOT NULL,
-  `ImdbVariants` text NOT NULL,
-  `GoogleImageVariants` text NOT NULL,
-  `RusSearch` tinyint(4) NOT NULL DEFAULT '-1',
-  `ImdbSearch` tinyint(4) NOT NULL DEFAULT '-1',
-  `RusUrlParse` varchar(255) NOT NULL DEFAULT '',
-  `ImdbUrlParse` varchar(255) NOT NULL DEFAULT '',
-  `imdbOriginalName` varchar(100) NOT NULL DEFAULT '',
-  `imdbSubtitle` varchar(100) NOT NULL DEFAULT '',
-  `imdbYear` varchar(10) NOT NULL DEFAULT '',
-  `imdbPosterUrl` varchar(255) NOT NULL DEFAULT '',
-  `imdbMPAA` varchar(255) NOT NULL DEFAULT '',
-  `imdbPersones` text NOT NULL,
-  `imdbRating` varchar(100) NOT NULL DEFAULT '',
-  `imdbCountries` text NOT NULL,
-  `imdbDesription` text NOT NULL,
-  `imdbGenres` text NOT NULL,
-  `imdbParsed` tinyint(1) NOT NULL DEFAULT '0',
-  `rusRusName` varchar(255) NOT NULL DEFAULT '',
-  `rusOriginalName` varchar(255) NOT NULL DEFAULT '',
-  `rusPosterUrl` varchar(100) NOT NULL DEFAULT '',
-  `rusYear` varchar(10) NOT NULL DEFAULT '',
-  `rusCountries` text NOT NULL,
-  `rusGenres` text NOT NULL,
-  `rusCompanies` text NOT NULL,
-  `rusTypeOfMovie` varchar(100) NOT NULL DEFAULT '',
-  `rusDescription` text NOT NULL,
-  `rusPersones` text NOT NULL,
-  `rusParsed` tinyint(4) NOT NULL DEFAULT '0',
-  `IsNode` tinyint(4) NOT NULL DEFAULT '0',
-  `Hide` tinyint(4) NOT NULL DEFAULT '0',
-  `Quality` varchar(100) NOT NULL DEFAULT '',
-  `Translation` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`ID`),
-  KEY `iPath` (`Path`(50))
-) TYPE=MyISAM;
-
-
+  `incoming_id` int(11) NOT NULL AUTO_INCREMENT,
+  `path` varchar(255) NOT NULL,
+  `level` tinyint(4) NOT NULL DEFAULT '0',
+  `is_dir` tinyint(4) NOT NULL,
+  `size` double DEFAULT NULL,
+  `expanded` tinyint(4) NOT NULL DEFAULT '0',
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `files` longblob,
+  `quality` blob,
+  `translation` blob,
+  `last_query` varchar(255) DEFAULT NULL,
+  `search_results` longblob,
+  `parsing_url` varchar(255) DEFAULT NULL,
+  `parsed_info` blob,
+  `info` blob,
+  `active` tinyint(4) NOT NULL DEFAULT '1',
+  `hidden` tinyint(4) NOT NULL DEFAULT '0',
+  `sort` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`incoming_id`),
+  UNIQUE KEY `path` (`path`),
+  KEY `sort` (`sort`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `languages_proto` (
+  `lang` enum('en','ru') NOT NULL,
+  `combination` varchar(4) NOT NULL,
+  `freq` double NOT NULL,
+  PRIMARY KEY (`lang`,`combination`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `log` (
+  `log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `pid` int(11) DEFAULT NULL,
+  `type` varchar(64) NOT NULL,
+  `status` tinyint(4) NOT NULL DEFAULT '0',
+  `started_at` datetime NOT NULL,
+  `ended_at` datetime DEFAULT NULL,
+  `message` text,
+  `report` longblob,
+  PRIMARY KEY (`log_id`),
+  KEY `type` (`type`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `movies` (
+  `movie_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `international_name` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `year` varchar(18) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `translation` varchar(255) NOT NULL DEFAULT '',
+  `quality` varchar(100) NOT NULL DEFAULT '',
+  `mpaa` varchar(255) DEFAULT NULL,
+  `covers` text NOT NULL,
+  `trailer` blob,
+  `hidden` tinyint(4) NOT NULL DEFAULT '0',
+  `hit` int(11) NOT NULL DEFAULT '0',
+  `type_of_movie` varchar(255) NOT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `present_by` varchar(255) NOT NULL,
+  `group` varchar(255) NOT NULL,
+  `rank` float NOT NULL DEFAULT '0',
+  PRIMARY KEY (`movie_id`),
+  KEY `iCreateDate` (`created_at`),
+  KEY `iName` (`name`),
+  KEY `iOriginalName` (`international_name`),
+  KEY `iYear` (`year`),
+  KEY `iHit` (`hit`),
+  KEY `Rank` (`rank`),
+  KEY `Hide` (`hidden`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `movies_comments` (
+  `movie_id` int(11) NOT NULL,
+  `comment_id` int(11) NOT NULL,
+  PRIMARY KEY (`movie_id`,`comment_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `movies_countries` (
+  `movie_id` int(11) NOT NULL DEFAULT '0',
+  `country_id` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`movie_id`,`country_id`),
+  KEY `FilmID` (`movie_id`),
+  KEY `CountryID` (`country_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `movies_files` (
+  `movie_id` int(11) NOT NULL,
+  `file_id` int(11) NOT NULL,
+  PRIMARY KEY (`movie_id`,`file_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `movies_genres` (
+  `movie_id` int(11) NOT NULL DEFAULT '0',
+  `genre_id` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`genre_id`,`movie_id`),
+  KEY `FilmID` (`movie_id`),
+  KEY `GenreID` (`genre_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `movies_users_ratings` (
+  `movie_user_rating_id` int(11) NOT NULL AUTO_INCREMENT,
+  `movie_id` int(11) NOT NULL DEFAULT '0',
+  `user_id` int(11) NOT NULL DEFAULT '0',
+  `rating` tinyint(11) NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`movie_user_rating_id`),
+  UNIQUE KEY `movie_id` (`movie_id`,`user_id`),
+  KEY `FilmID` (`movie_id`),
+  KEY `UserID` (`user_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `participants` (
+  `participant_id` int(11) NOT NULL AUTO_INCREMENT,
+  `movie_id` int(11) NOT NULL DEFAULT '0',
+  `role_id` int(11) NOT NULL DEFAULT '0',
+  `character` varchar(100) DEFAULT NULL,
+  `person_id` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`participant_id`),
+  UNIQUE KEY `movie_id_2` (`movie_id`,`role_id`,`person_id`),
+  KEY `person_id` (`person_id`),
+  KEY `role_id` (`role_id`),
+  KEY `movie_id` (`movie_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `persones` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `RusName` varchar(100) NOT NULL DEFAULT '',
-  `OriginalName` varchar(100) NOT NULL DEFAULT '',
-  `Description` text NOT NULL,
-  `Images` text NOT NULL,
-  `Photos` text,
-  `OzonUrl` varchar(100) DEFAULT '',
-  `Rank` float NOT NULL DEFAULT '0',
-  `LastUpdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (`ID`),
-  KEY `Rank` (`Rank`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `rnd_text` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `Text` text NOT NULL,
-  PRIMARY KEY (`ID`)
-) TYPE=MyISAM;
-
-INSERT INTO `rnd_text` (`ID`, `Text`) VALUES
-(1, 'Самая большая трата, какую только можно сделать, — это трата времени. (Теофраст (Феофраст))'),
-(2, 'Время — способ добывать деньги, деньги — способ убивать время. (Веселин Георгиев)'),
-(3, 'Если деньги есть, как-то легче согласиться с тем, что не в них счастье… (NN)'),
-(4, 'Есть вещи важнее денег, но без денег эти вещи не купишь. (Проспер Мериме)'),
-(5, 'Забудь часы нужды, но не забывай того, чему они тебя научили. (С. Геснер)'),
-(6, 'Счастье — это когда тебе не говорят, что ты выглядишь на миллион долларов, а у тебя есть миллион долларов, и всем неважно, как ты выглядишь.'),
-(7, 'В кино вместо бюста нужно показывать сердце. (Джина Лоллобриджида)'),
-(8, 'Попкорн — единственная область кинопромышленности, в которой хороший вкус все еще что-то значит. (Майк Барфилд)'),
-(9, '«Не понимаю, почему вы так строги к спектаклю, — публика от него в восторге». — «Да, но она одинока в своем мнении». (Барбе д''Орвиль)'),
-(10, 'Ад — это зал, заполненный наполовину. (Роберт Фрост)'),
-(11, 'Зрительный зал начинает смеяться, как только начнут хохотать несколько зрителей. Вся трудность в том, чтобы рассмешить этих нескольких. (Марсель Ашар)'),
-(12, 'Искусство требовало жертв, и они быстро заполнили зал. (В. Бегун)'),
-(13, 'Бизнес — это искусство извлекать деньги из чужого кармана, не прибегая к насилию. (Макс Амстердам)'),
-(14, 'Я думал, что кинодрама — это когда героиня плачет. Я ошибался. Кинодрама — это когда плачут зрители. (Франк Капра)'),
-(15, 'Кино не умрет, пока в кинотеатрах будет темно. (Сэмюэл Голдвин)'),
-(16, 'Каждый хочет быть Кэри Грантом. Даже я хотел бы им быть. (Кэри Грант)'),
-(17, 'Четвертый раз смотрю этот фильм и должна вам сказать, что сегодня актеры играли как никогда. (Фаина Раневская)'),
-(18, 'Те, кто считает, что деньги могут всё, в действительности могут всё ради денег. (Джордж Савил Галифакс)'),
-(19, 'Искусству угрожают два чудовища: художник, который не является мастером, и мастер, который не является художником. (Анатоль Франс)'),
-(20, 'Тот, кто ищет миллионы, весьма редко их находит, но зато тот, кто их не ищет, — не находит никогда! (О. Бальзак)'),
-(21, 'Если не в деньгах счастье, то отдайте их соседу. (Ж. Ренар)'),
-(22, 'Для того чтобы преуспеть в бизнесе, нужен талант необычайный; если же вы обладаете таким талантом, зачем тратить его на бизнес. (И. Липкий)'),
-(23, 'Самые лучшие актеры, конечно, у Диснея. Плохого актера он просто стирает. (Альфред Хичкок)'),
-(24, '«Кино — это жизнь, из которой вырезано все лишнее». (Альфред Хичкок)'),
-(25, 'Кино состоит из экрана и множества кресел, которые нужно заполнить. (Альфред Хичкок)'),
-(26, 'Фильм — это жизнь, с которой вывели пятна скуки. (Альфред Хичкок)'),
-(27, 'Продолжительность фильма определяется выносливостью мочевого пузыря обычного зрителя. (Альфред Хичкок)'),
-(28, 'Фильм должен начинаться с землетрясения, а потом напряжение должно нарастать. (Альфред Хичкок)'),
-(29, 'Фильм — не кусок жизни, а кусок пирога. (Альфред Хичкок)'),
-(30, 'Люди приходят в кино, чтобы разделить одну и ту же мечту. (Бернардо Бертолуччи)'),
-(31, 'В фильме должны быть начало, середина и конец — но не обязательно именно в этом порядке. (Жан-Люк Годар)'),
-(32, 'Все-таки, жаль немого кино. Какое удовольствие было видеть, как женщина открывает рот, а голоса не слышно. (Чарльз Чаплин)'),
-(33, 'Бедствием немого кино были ненужные надписи, бедствием нынешнего — ненужные диалоги. (Рене Клер)'),
-(34, 'Раньше актрисы старались стать кинозвездами; теперь кинозвезды стараются стать актрисами. (Лоренс Оливье)'),
-(35, 'Дайте публике то, чего она хочет, и она повалит толпой. (Гарри Кон, киномагнат)'),
-(36, 'Автор привыкает в конце концов к своей публике, точно она разумное существо. (Генрих Гейне)'),
-(37, 'Легче всего мне общаться с десятью тысячами людей. Труднее всего — с одним. (Джоан Баэз)'),
-(38, 'Публика — единственный настоящий учитель актерского ремесла. (Джордж Скотт)'),
-(39, 'Если в фразе есть слово «задница», публика, как бы она ни была изысканна, услышит только это слово. (Жюль Ренар)'),
-(40, 'Мы, англичане, говорим: настоящий друг тот, кто навестит тебя даже в тюрьме. Нет: настоящий друг тот, кто придет на твое выступление. (Малколм Брэдбери)'),
-(41, 'Зрительный зал начинает смеяться, как только начнут хохотать несколько зрителей. Вся трудность в том, чтобы рассмешить этих нескольких. (Марсель Ашар)'),
-(42, 'Что общего между театром и тюрьмой? Никогда не знаешь, с кем будешь сидеть. (Михаил Генин)'),
-(43, 'Кому — таланты, кому — поклонники. (О. Донской)'),
-(44, 'Самая лучшая публика — это публика умная, образованная и слегка под хмельком. (Олбин Баркли)'),
-(45, 'Если публика сегодня будет капризничать, я умру уже во втором действии. (Сара Бернар)'),
-(46, 'Если пьеса имеет успех, режиссер воображает себя гением. Если пьеса проваливается, он заявляет, что публика — дура. (Свиш Гитри)'),
-(47, 'Публика не слушает, а если слушает, то не слышит, если же слышит, то не понимает. (Симона Синьоре)'),
-(48, 'Время — те же деньги, но деньги лучше. (А. Бердичевский и А. Климов)'),
-(49, 'Время — потеря денег. (Оскар Уайльд)'),
-(50, 'Зрителям ударила в голову новая серия «Мочеубойной силы». (Валентин Домиль)'),
-(51, 'Если Михалков — солнце российского кинематографа, то мы — утомленные солнцем. (Владимир Семенов)'),
-(52, 'Мы, женщины, можем делать с мужчинами все, что хотим! (к/ф "Здравствуйте, я ваша тетя!")'),
-(53, 'Так бывает. Вот ты есть, а тебя никому не надо к\\ф "Дура"'),
-(54, 'Это нужно не мне, это нужно Франции'),
-(55, '60 строчек журнального текста — почти часть фильма. (В. Шукшин)'),
-(56, 'А я вообще-то режиссёров не очень люблю... (К-ф ''Брат'')'),
-(57, 'Бедствием немого кино были ненужные надписи, бедствием нынешнего - ненужные диалоги. (Рене Клер)'),
-(58, 'Бери ношу по себе, чтоб не падать при ходьбе. (из к/ф "Брат").'),
-(59, 'Бывают удивительно своевременные изобретения. Например, широко-форматное кино появилось как раз тогда, когда актеры на экране стали большую часть времени проводить лежа. (Макс Фавелли)'),
-(60, 'В кино вместо бюста нужно показывать сердце. (Джина Лоллобриджида)'),
-(61, 'В кино ходят два вида людей, те кто жует поп-корн, и те кто ненавидит тех кто жует поп-корн.'),
-(62, 'В нашем кинематографе есть хорошие фильмы, которым не хватает качественных спецэффектов, и качественные спецэффекты, которым не хватает нормальных фильмов. Встретятся они когда-нибудь?'),
-(63, 'В России еще не научились снимать свободных фильмов так, чтобы они были свободны от историко-идеологических штампов. (Владимир Борисов)'),
-(64, 'В фильме были положительные и отрицательные бандиты.'),
-(65, 'В фильме должно быть начало, середина и конец, - но не обязательно именно в этом порядке. (Жан-Люк Годар)'),
-(66, 'В хорошем фильме не должно быть хеппи енда; в хорошем фильме должны умирать все, кроме Лютого.'),
-(67, 'Великое искусство кино состоит не в движении мускулов лица или тела, а в движении мысли и души. (БРУКС Луиза)'),
-(68, 'Все-таки жаль немого кино. Какое удовольствие было видеть, как женщина открывает рот, а голоса не слышно. (Чарлз Чаплин)'),
-(69, 'Всего тысячу ведер, и золотой ключик наш!'),
-(70, 'Всем, кто знаком с шестилогией "Звездные войны"... Правда ведь приятно, что Дарт Вейдер в конце-концов оказался "Нашим"? (Владимир Борисов)'),
-(71, 'Всё. Кина не будет... Электричество кончилось. (К-ф ''Джентельмены удачи'')'),
-(72, 'Глядя американские фильмы, непонятно: Молятся ли вампиры перед едой? (Владимир Борисов)'),
-(73, 'Детективные сериалы заканчиваются в самый подходящий момент - после ареста преступника и до вынесения судебного приговора.'),
-(74, 'Добродетель нефотогенична. (Кёрк Дуглас)'),
-(75, 'Если Вас часто посещают геройские мысли, значит - Вы любите смотреть боевики... (Владимир Борисов)'),
-(76, 'Звуковое кино открыло тишину. (Робер Брессон)'),
-(77, '-Выгнал на улицу жену с ребенком... \r\n-Какой ребенок? Я - офицер!!! \r\n-Выгнал жену с офицером!! (из к/ф "Тот самый Мюнхаузен")'),
-(78, 'К фильму, как и к пиву требуется закуска.'),
-(79, 'Как завлекательны рекламные кадры из нового фильма. И как они убоги, соединенные вместе.'),
-(80, 'Кинематограф - опасное изобретение. (Рене Клер)'),
-(81, 'Кино - великая сила, если продуманы все кадры. (Георгий Александров)'),
-(82, 'Кино - искусство не для ученых, а для неграмотных. (Вернер Херцог)'),
-(83, 'Кино - не кусок жизни, а кусок пирога. (Альфред Хичкок)'),
-(84, 'Кино - это ролик для рекламы актёров. (Георгий Александров)'),
-(85, 'Кино не будет казаться старым, если дама с тобой каждый раз будет новая.'),
-(86, 'Кино не умрет, пока в кинотеатрах будет темно. (Сэмюэл Голдвин)'),
-(87, 'Кино состоит из экрана и множества кресел, которые нужно заполнить. (Альфред Хичкок)'),
-(88, 'Кино – видимые удовольствия. (Валерий Афонченко)'),
-(89, 'Кино, в отличие от книг, губительно для воображения.'),
-(90, 'Кинокамера всех нас превращает в туристов, глазеющих на чужую жизнь или на свою собственную. (Сьюзан Зонтаг)'),
-(91, 'Кинорежиссер перепробовал на роль проститутки много девушек, но подходящей не находилось. Ни одна из претенденток ни разу не догадалась попросить денег… (Владимир Семенов)'),
-(92, 'Киностудия - самя лучшая детская игрушка. (Орсон Уэллс)'),
-(93, 'Кинофильм не выдержал испытания временем - зрители ушли из зала через 10 минут.'),
-(94, 'Киношник все равно что сборщик фруктов - где есть работа, туда и едешь. (Орсон Уэллс)'),
-(95, 'Комедия имеет намерение отображать людей худших, а трагедия - лучших, чем существующие. (Аристотель)'),
-(96, 'Компания «Вернер Бразерс» приступила к съемкам продолжения блокбастера «Troja». Фильм будет называться «Четверо». (Борис Ушеренко)'),
-(97, 'Лучше плохой сценарий, и хороший режисер, чем хороший сценарий и плохой режисер. (Бетти Дейвис)'),
-(98, 'Люди приходят в кино, чтобы разделить одну и ту же мечту. (Бернардо Бертолуччи)'),
-(99, 'Люстру разбил..., отрицать не буду. Когда выходил, нечаянно стулом зацепил.'),
-(100, 'Между прочим, сцену падения Останкинской башни в "Дневном дозоре" делали программисты из Самостийной. Даже денег не взяли.'),
-(101, 'Беря на себя миссию правосудия, где-нибудь да нарушишь закон. - т/с "Приключения принца Флоризеля", Россия'),
-(102, 'Без прошлого нет будущего. - т/с "17 мгновений весны", Россия'),
-(103, 'Все, буквально все, едва заслышав, что мы отправляемся за сокровищами, изо всех сил стараются нам помочь. - к/ф "Остров сокровищ", Россия'),
-(104, 'Нет такого мужа, который не мечтал бы хоть на час стать холостяком. - к/ф "Бриллиантовая рука", Россия'),
-(105, 'Ну вот у вас, на Земле, как вы определяете - кто перед кем сколько должен присесть?\r\n- Ну, эт на глаз...\r\n- Дикари!\r\nк/ф "Кин-дза-дза", Россия'),
-(106, 'Тост без вина - все равно что брачная ночь без невесты. - к/ф "Кавказская пленница или новые приключения Шурика", Россия'),
-(107, 'Шанс! Его так просто упустить, но легче локоть укусить, чем новый шанс заполучить. - м/ф "Остров сокровищ", Россия'),
-(108, 'Чтоб ты жил на одну зарплату! - к/ф "Бриллиантовая рука", Россия'),
-(109, 'Нельзя гнать волну без перерыва. - к/ф "Молчание ягнят", США'),
-(110, 'Почем опиум для народа? - т/ф "Двенадцать стульев", Россия'),
-(111, 'Да здравствует наш суд - самый гуманный суд в мире! - к/ф "Кавказская пленница или новые приключения Шурика", Россия'),
-(112, 'Мы живем между пламенем свечи и светом звезды. - т/с "Babylon-5"'),
-(113, 'Что один человек собрал, другой завсегда разобрать сможет. - т/ф "Формула любви", Россия'),
-(114, 'Счастливые люди не имеют воспоминаний. - к/ф "Киборг II", США'),
-(115, 'Так выпьем за то, чтобы наши желания всегда совпадали с нашими возможностями! - к/ф "Кавказская пленница или новые приключения Шурика", Россия'),
-(116, 'Наши люди в булочную на такси не ездят! - к/ф "Бриллиантовая рука", Россия'),
-(117, '- Говорят, человек должен испытать бедность, любовь и войну.\r\n- Возможно, но не в одно же время.\r\nт/ф "Короли и капуста", Россия'),
-(118, 'Нет, генацвале. Когда у общества нет цветовой дифференциации штанов, то нет цели! - к/ф "Кин-дза-дза", Россия'),
-(119, 'Половина моя - половина наша. - т/ф "Двенадцать стульев", Россия'),
-(120, 'За чужой счет пьют даже трезвенники и язвенники! - к/ф "Бриллиантовая рука", Россия'),
-(121, 'Скажем без подвоха: жадность - это плохо. - м/ф "Остров сокровищ", Россия'),
-(122, 'Разговаривая с людьми, всегда улыбайся. - т/ф "Место встречи изменить нельзя", Россия'),
-(123, 'Куй железо не отходя от кассы! - к/ф "Бриллиантовая рука", Россия'),
-(124, 'Никогда не гоняйся за двумя вещами: за автобусами и за женщинами - все равно не догонишь! - к/ф "Harley Davidson & Marlboro Man"'),
-(125, 'Чем больше я узнаю людей, тем больше мне хочется стать животным. - м/ф "Маугли", Россия'),
-(126, 'Хотите чтобы царил мир - уважайте женщин. - т/с "Приключения Геракла", США'),
-(127, 'Если женщина что-то просит, надо ей это обязательно дать. Иначе она возьмет это сама. - т/ф "Человек с бульвара капуцинов", Россия'),
-(128, 'Женщины не меняются по указке. - т/с "Приключения Геракла", США'),
-(129, 'В конце концов, всем женщинам свойственны черты милиционера. Сначала они говорят: "Давайте не будем!", а потом: "Следуйте за мной! - к/ф "Три плюс два", Россия'),
-(130, 'Нельзя поворачиваться спиной к природе, иначе она повернется спиной к вам. - т/с "Секретные материалы", США'),
-(131, 'Почему ты всегда без стука входишь в мою личную жизнь? - т/с "Агент национальной безопасности", Россия'),
-(132, 'Замужество сгубило больше женщин, чем голод, война и стихийное бедствие. - к/ф "101 долматинец", США'),
-(133, 'Идеальную любовь можно искать всю жизнь и не найти, потому что сама любовь несовершенна. - т/с "Бухта Доусона"'),
-(134, 'С добрых дел надо начинать, а не откупаться ими. - т/с "На краю Вселенной", Австралия'),
-(135, 'Дураками не рождаются. Дураков из нас делают красотки. - к/ф "101 долматинец", США'),
-(136, 'Так выпьем же за то, чтобы никто из нас, как бы высоко он ни взлетал, никогда не отрывался бы от коллектива! - к/ф "Кавказская пленница или новые приключения Шурика", Россия'),
-(137, 'Господин назначил меня любимой женой! - к/ф "Белое солнце пустыни", Россия'),
-(138, 'Вот и все... и нету Билла... жадность Билла погубила! - м/ф "Остров сокровищ", Россия'),
-(139, '- Ну вот прочитай, что сейчас думаю...\r\n- ...Думаешь что правду сказал.\r\n- Вот видишь!\r\n- А кто сейчас на Плюке правду думает?\r\n- Вот потому, что вы говорите то, что не думаете, и думаете то, что не думаете, вот в клетках и сидите.\r\nк/ф "Кин-дза'),
-(140, 'Заграница нам поможет! - т/ф "Двенадцать стульев", Россия'),
-(141, 'Если человек идиот, то это надолго! - к/ф "Бриллиантовая рука", Россия'),
-(142, 'Мы с Вами чужие на этом празднике жизни. - т/ф "Двенадцать стульев", Россия'),
-(143, 'Вежливость - главное оружие вора. - к/ф "Джентельмены удачи", Россия'),
-(144, 'Скоро только кошки родятся! - т/ф "Двенадцать стульев", Россия'),
-(145, '- Жить, как говорится, хорошо!\r\n- А хорошо жить - еще лучше!\r\nк/ф "Кавказская пленница или новые приключения Шурика", Россия'),
-(146, 'Будь проклят тот день, когда я сел за баранку этого пылесоса! - к/ф "Кавказская пленница или новые приключения Шурика", Россия'),
-(147, 'У нас управдом - друг человека! - к/ф "Бриллиантовая рука", Россия'),
-(148, 'Коли доктор сыт - и больному легче! - т/ф "Формула любви", Россия'),
-(149, 'Правила есть везде и надо жить среди других животных, оставаясь самим собой. - к/ф "Наполеон", Австралия'),
-(150, 'Всякое чудо перестает быть чудом, если задаться вопросом почему оно происходит. - к/ф "Батарейки в комплет не входят", США'),
-(151, 'Мне страшно от того, что Бог говорит с нами, а его никто не слышит. - т/с "Секретные материалы", США'),
-(152, 'Иногда, когда проигрываешь, то побеждаешь. - к/ф "Куда приводят мечты", США'),
-(153, 'Умная женщина не доверяет мужчине, который говорит "верь мне". - к/ф "Марабунта"'),
-(154, 'Лучше спать в темнице с крысами, чем на подушках с гадюкой. - т/с "Приключения Геракла", США'),
-(155, 'Признаться в своих чувствах - не слабость. Для этого нужны сила и мужество. - т/с "Приключения Геракла", США'),
-(156, 'Да прибудет Сила с тобой! - к/ф "Звездные войны", США'),
-(157, 'Постарайтесь поменьше обращать внимания на сердце тайны и побольше на тайны сердца. - т/с "Секретные материалы", США'),
-(158, 'Главное - не ошибиться в выборе тайны, которую нужно раскрыть. - т/с "Секретные материалы", США'),
-(159, 'Верьте сказке, а не сказочнику. - т/с "Секретные материалы", США'),
-(160, 'Если бы люди помнили свои собственные ошибки, они бы никогда не замечали чужих. - т/ф "По семейным обстоятельствам", Россия'),
-(161, 'Каждый человек гений, пока он не открыл рот. - т/с "Невидимка", США'),
-(162, 'Зачем быть богом, если все твои друзья - люди? - т/с "Невидимка", США'),
-(163, 'Видеть - не значит верить; верить - значит видеть. - к/ф "Санта-Клаус", США'),
-(164, 'В любви после каждого "последнего" решения найдется местечко для "самого последнего". - "Обыкновенный человек"'),
-(165, 'Пребывание в России действует разлагающе на неокрепшие умы. - к/ф "Граф Колиостро", Россия'),
-(166, 'Кто ест мало, тот живет долго, ибо ножом и вилкой роем мы могилу себе. - к/ф "Граф Колиостро", Россия'),
-(167, 'Коли доктор сыт, так и больному легче. - к/ф "Граф Колиостро", Россия'),
-(168, 'Планета, на которой нет цветовой дифференциации штанов, где не понятно перед кем и сколько раз нужно сесть и сделать КУ - не имеет будущего. - к/ф "Кин-дза-дза", Россия'),
-(169, 'Знаете, что надо сделать, чтобы пес не укусил за ногу? Надо быть безногим. - т/с "Квантовый скачок", США'),
-(170, 'Умное лицо - это еще не признак ума, господа. Все глупости на земле делаются именно с этим выражением лица. Улыбайтесь, господа! - т/ф "Тот самый Мюнхгаузен", Россия'),
-(171, 'Интернет - это еще один способ отречения от мира. - к/ф "Неспящие в Интернете"'),
-(172, 'Когда дует тайфун славы, самое главное - устоять на ногах. - к/ф "Любовь и аэробика"'),
-(173, 'Не надо громких слов - они потрясают воздух, но не собеседника. - к/ф "Граф Колиостро", Россия'),
-(174, 'Если ты человек, так и люби человека, а не мечту какую-то бесплотную. - к/ф "Граф Колиостро", Россия'),
-(175, 'Погоня - это замечательно. Когда уходишь от погони больше ни о чем не думаешь. - к/ф "Граф Колиостро", Россия'),
-(176, 'Время надо наполнять событиями, тогда оно летит не заметно. - к/ф "Граф Колиостро", Россия'),
-(177, 'Огонь тоже считался божественным, пока Прометей не украл его. Теперь мы кипятим на нем воду. - к/ф "Граф Колиостро", Россия'),
-(178, 'Лучше любить и потерять, чем вовсе не изведать любви. - к/ф "Люди в черном", США'),
-(179, 'Жена - это прочитанная книга, а прочитанную книгу можно беречь, хранить, переплетать, но читать ее заново уже не интересно. - т/ф "Летучая мышь", Россия'),
-(180, 'Кушать нужно комфортно, а не как манекенщица на поддиуме. - к/ф "Следующий"'),
-(181, 'Высокие технологии заведут человечество в самую низкую пропасть беспредела. - к/ф "Следующий"'),
-(182, 'Зачем нашим советским людям скрывать свое лицо? (товарищ Огурцов, к/ф "Карнавальная ночь")'),
-(183, 'Есть установка весело встретить Новый год. (товарищ Огурцов, к/ф "Карнавальная ночь")'),
-(184, 'Я и сам шутить не люблю и людЯм не дам. (товарищ Огурцов, к/ф "Карнавальная ночь")'),
-(185, 'Бабу Ягу со стороны брать не будем - воспитаем в своем коллективе. (товарищ Огурцов, к/ф "Карнавальная ночь")'),
-(186, 'Мы должны воспитывать нашего зрителя. Его голыми ногами не воспитаешь. Костюмы надо заменить, ноги изолировать. (товарищ Огурцов, к/ф "Карнавальная ночь")'),
-(187, 'Добавьте сюда еще людей - будет большой, массовый квартет. (товарищ Огурцов, к/ф "Карнавальная ночь")'),
-(188, 'Эта ваша музыка. Дает она что-то? Нет, не дает. А надо, чтобы давала. Нужно, чтоб музыка тебя брала, нужно, чтобы она тебя вела, но в то же время и не уводила. (товарищ Огурцов, к/ф "Карнавальная ночь")'),
-(189, 'Басня - это хорошо, басня - это сатира. Нам гоголи-щедрины нужны. (товарищ Огурцов, к/ф "Карнавальная ночь")');
-
+  `person_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `international_name` varchar(100) NOT NULL,
+  `info` text NOT NULL,
+  `photos` text,
+  `url` varchar(100) DEFAULT NULL,
+  `rank` float NOT NULL DEFAULT '0',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `tries` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`person_id`),
+  KEY `Rank` (`rank`),
+  KEY `updated_at` (`updated_at`),
+  KEY `name` (`name`),
+  KEY `international_name` (`international_name`),
+  KEY `url` (`url`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `ratings` (
+  `rating_id` int(11) NOT NULL AUTO_INCREMENT,
+  `movie_id` int(11) NOT NULL,
+  `system` enum('local','imdb','kinopoisk') NOT NULL,
+  `system_uid` int(11) DEFAULT NULL,
+  `count` int(11) DEFAULT NULL,
+  `value` float DEFAULT NULL,
+  `details` varbinary(255) DEFAULT NULL,
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`rating_id`),
+  UNIQUE KEY `movie_id` (`movie_id`,`system`),
+  KEY `updated_at` (`updated_at`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+CREATE TABLE `registry` (
+  `key` varchar(255) NOT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`key`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `roles` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `Role` varchar(100) NOT NULL DEFAULT '',
-  `SortOrder` int(11) NOT NULL DEFAULT '5',
-  PRIMARY KEY (`ID`),
-  KEY `Role` (`Role`),
-  KEY `SortOrder` (`SortOrder`)
-) TYPE=MyISAM;
-
-INSERT INTO `roles` (`ID`, `Role`, `SortOrder`) VALUES
-(1, 'режиссер', 1),
-(2, 'сценарист', 4),
-(3, 'актер', 2),
-(4, 'актриса', 2),
-(5, 'продюсер', 3),
-(6, 'автор музыки', 5),
-(7, 'оператор', 6),
-(8, 'автор сюжета', 4),
-(9, 'монтажер', 6),
-(10, 'художник - постановщик', 5),
-(11, 'спецэффекты', 6),
-(12, 'исполнительный продюсер', 3),
-(13, 'постановщик трюков', 6),
-(14, 'мультипликатор', 6),
-(16, 'в обработке', 6),
-(17, 'associate producer', 6),
-(18, 'художник-постановщик', 5),
-(19, 'исполнение песни', 5),
-(20, 'автор программы', 4);
-
+  `role_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `name_hyphenated` varchar(100) DEFAULT NULL,
+  `sort` int(11) NOT NULL DEFAULT '5',
+  PRIMARY KEY (`role_id`),
+  KEY `Role` (`name`),
+  KEY `SortOrder` (`sort`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `search_trigrams` (
   `trigram` char(3) NOT NULL,
-  `type` enum('film','person') NOT NULL,
+  `type` enum('movie','person') NOT NULL,
   `id` int(11) NOT NULL,
   KEY `trigram` (`trigram`,`type`),
   KEY `type` (`type`,`id`)
-) TYPE=MyISAM;
-
-
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `suggestion` (
   `suggestion_id` int(11) NOT NULL AUTO_INCREMENT,
   `word` varchar(255) NOT NULL,
-  `type` enum('film','person') NOT NULL,
+  `type` enum('movie','person') NOT NULL,
   `id` int(11) NOT NULL,
   PRIMARY KEY (`suggestion_id`),
   UNIQUE KEY `word_2` (`word`,`type`,`id`),
-  KEY `word` (`word`)
-) TYPE=MyISAM;
-
-
+  KEY `word` (`word`),
+  KEY `type` (`type`,`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `suggestion_cache` (
   `query` varchar(255) NOT NULL,
   `result` text NOT NULL,
   PRIMARY KEY (`query`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `userfilmratings` (
-  `FilmID` int(11) NOT NULL DEFAULT '0',
-  `UserID` int(11) NOT NULL DEFAULT '0',
-  `Rating` tinyint(11) NOT NULL DEFAULT '0',
-  `Date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (`FilmID`,`UserID`),
-  KEY `FilmID` (`FilmID`),
-  KEY `UserID` (`UserID`)
-) TYPE=MyISAM;
-
-
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 CREATE TABLE `users` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `Login` varchar(32) NOT NULL DEFAULT '',
@@ -754,15 +280,4 @@ CREATE TABLE `users` (
   `Preferences` text NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `iLogin` (`Login`)
-) TYPE=MyISAM;
-
-
-CREATE TABLE `version` (
-  `product_code` varchar(255) NOT NULL DEFAULT '',
-  `revision` int(11) DEFAULT NULL,
-  PRIMARY KEY (`product_code`)
-) TYPE=MyISAM;
-
-INSERT IGNORE INTO `version` (`product_code`, `revision`) VALUES
-('lms_video_1_1', 1),
-('lms_platform', 1);
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;

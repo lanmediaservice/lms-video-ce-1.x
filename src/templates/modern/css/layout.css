@@ -12,7 +12,8 @@ html, body {
 }
 
 body {
-    background: url("../img/bg.jpg") repeat scroll -70% -20% #CBCBCB;
+    background-color: #CBCBCB;
+    background-image: url("../img/bg.png");
 }
 
 .cssgradients body {
@@ -107,27 +108,38 @@ footer p {
 }
 
 #user_message {
-    left: 50%;
-    margin-left: -250px;
-    margin-right: 0;
     position: fixed;
     text-align: center;
     top: 0;
-    width: 500px;
+    width: 100%;
     z-index: 1010;
 }
 #user_message > div {
-    background-color: #FFFF99;
-    margin: 5px;
+    background-color: #F9EDBE;
     padding: 5px;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.5);
+    -webkit-box-shadow: 0 10px 10px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 0 10px 10px rgba(0, 0, 0, 0.5);
+    -o-box-shadow: 0 10px 10px rgba(0, 0, 0, 0.5);
+
 }
-#user_message > div.warn {
-    background-color: #FFCCCC;
-}
+#user_message > div.warn,
 #user_message > div.info {
-    background-color: #6690C9;
     color: white;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+#user_message > div.warn {
+    background-color: #C66565;
+}
+
+#user_message > div.info {
+    background-color: #6690c9;
+}
+
+#user_message a.button-close {
+    display: block;
+    height: 16px;
+    width: 16px;
+    background: transparent url(../img/16/close.png) no-repeat 0px 0px;
 }
