@@ -46,9 +46,6 @@ $gd_loaded = function_exists('imagecreatefromgif');
 <script language="JavaScript" src="common/jhr_controller.js"></script>
 <script language="JavaScript" src="js/rsh.js?v=4"></script>
 <script language="JavaScript" src="js/trimpath/template.js"></script>
-<script language="JavaScript" src="klayers.js"></script>
-<script language="JavaScript" src="strings.js"></script>
-<script language="JavaScript" src="dropDownList.js"></script>
 <script language="JavaScript" src="js/lms-jsf/JSAN.js"></script>
 <script language="JavaScript" src="js/lms-jsf/LMS.js"></script>
 <script language="JavaScript" src="js/lms-jsf/LMS/Connector.js"></script>

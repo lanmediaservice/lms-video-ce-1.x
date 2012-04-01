@@ -753,7 +753,11 @@ class Lms_Application
     {
         if (Lms_Application::isWindows()) {
             $script = APP_ROOT . '\\tasks\\' . $task;
-            $php = APP_ROOT . '\\tasks\\php.bat';
+            if (is_file(APP_ROOT . '\\tasks\\php-forced.bat')) {
+                $php = APP_ROOT . '\\tasks\\php-forced.bat';
+            } else {
+                $php = APP_ROOT . '\\tasks\\php.bat';
+            }
             $cmd = 'start ' . escapeshellarg($task) . ' ' . escapeshellarg($php) . ' ' . $script;
             //Lms_Debug::debug($cmd);
             pclose(popen($cmd, "r"));    

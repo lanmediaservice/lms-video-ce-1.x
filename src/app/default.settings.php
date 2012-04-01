@@ -180,9 +180,9 @@ Lms_Ufs::setInternalEncoding('CP1251');
 
 Lms_Ufs::setSystemEncoding('CP1251');
 
-Lms_Ufs::addConfig('ls_dateformat_in_iso8601', $config['ls_dateformat_in_iso8601']);
+Lms_Ufs::addConfig('ls_dateformat_in_iso8601', @$config['ls_dateformat_in_iso8601']);
 
-Lms_Ufs::addConfig('disable_4gb_support', $config['disable_4gb_support']);
+Lms_Ufs::addConfig('disable_4gb_support', @$config['disable_4gb_support']);
 
 if (!empty($config["dir_extensions"])) {
     foreach ($config["dir_extensions"] as $path => $pathConfig) {

@@ -166,31 +166,31 @@
             <div id="videoplayer_settings" class="videoplayer content" style="display: none">
                 <ul>
                     <?php if (@$config['download']['players']['selectable']['la']): ?>
-                        <li><label><input type="radio" name="videoplayer" value="la"> <img border='0' height='24' width='24' src='images/la24.gif'> Light Alloy</label></li>
+                        <li><label><input type="radio" name="videoplayer" value="la"> <img border='0' height='24' width='24' src='templates/<?php echo $config['template'];?>/img/24/la.gif'> Light Alloy</label></li>
                     <?php endif;?>
                     <?php if (@$config['download']['players']['selectable']['mp']): ?>
-                        <li><label><input type="radio" name="videoplayer" value="mp"> <img border='0' height='24' width='24' src='images/mp24.gif'> Windows Media Player</label></li>
+                        <li><label><input type="radio" name="videoplayer" value="mp"> <img border='0' height='24' width='24' src='templates/<?php echo $config['template'];?>/img/24/mp.gif'> Windows Media Player</label></li>
                     <?php endif;?>
                     <?php if (@$config['download']['players']['selectable']['mpcpl']): ?>
-                        <li><label><input type="radio" name="videoplayer" value="mpcpl"> <img border='0' height='24' width='24' src='images/mpcpl24.gif'> Media Player Classic</label></li>
+                        <li><label><input type="radio" name="videoplayer" value="mpcpl"> <img border='0' height='24' width='24' src='templates/<?php echo $config['template'];?>/img/24/mpcpl.gif'> Media Player Classic</label></li>
                     <?php endif;?>
                     <?php if (@$config['download']['players']['selectable']['bsl']): ?>
-                        <li><label><input type="radio" name="videoplayer" value="bsl"> <img border='0' height='24' width='24' src='images/bsl24.gif'> BSPlayer</label></li>
+                        <li><label><input type="radio" name="videoplayer" value="bsl"> <img border='0' height='24' width='24' src='templates/<?php echo $config['template'];?>/img/24/bsl.gif'> BSPlayer</label></li>
                     <?php endif;?>
                     <?php if (@$config['download']['players']['selectable']['crp']): ?>
-                        <li><label><input type="radio" name="videoplayer" value="crp"> <img border='0' height='24' width='24' src='images/mls24.gif'> Crystal Player</label></li>
+                        <li><label><input type="radio" name="videoplayer" value="crp"> <img border='0' height='24' width='24' src='templates/<?php echo $config['template'];?>/img/24/mls.gif'> Crystal Player</label></li>
                     <?php endif;?>
                     <?php if (@$config['download']['players']['selectable']['tox']): ?>
-                        <li><label><input type="radio" name="videoplayer" value="tox"> <img border='0' height='24' width='24' src='images/tox24.gif'> xine</label></li>
+                        <li><label><input type="radio" name="videoplayer" value="tox"> <img border='0' height='24' width='24' src='templates/<?php echo $config['template'];?>/img/24/tox.gif'> xine</label></li>
                     <?php endif;?>
                     <?php if (@$config['download']['players']['selectable']['kaf']): ?>
-                        <li><label><input type="radio" name="videoplayer" value="kaf"> <img border='0' height='24' width='24' src='images/kaf24.gif'> kaffeine</label></li>
+                        <li><label><input type="radio" name="videoplayer" value="kaf"> <img border='0' height='24' width='24' src='templates/<?php echo $config['template'];?>/img/24/kaf.gif'> kaffeine</label></li>
                     <?php endif;?>
                     <?php if (@$config['download']['players']['selectable']['pls']): ?>
-                        <li><label><input type="radio" name="videoplayer" value="pls"> <img border='0' height='24' width='24' src='images/pls24.gif'> Winamp/Mplayer</label></li>
+                        <li><label><input type="radio" name="videoplayer" value="pls"> <img border='0' height='24' width='24' src='templates/<?php echo $config['template'];?>/img/24/pls.gif'> Winamp/Mplayer</label></li>
                     <?php endif;?>
                     <?php if (@$config['download']['players']['selectable']['xspf']): ?>
-                        <li><label><input type="radio" name="videoplayer" value="xspf"> <img border='0' height='24' width='24' src='images/vlc24.gif'> VLC media player</label></li>
+                        <li><label><input type="radio" name="videoplayer" value="xspf"> <img border='0' height='24' width='24' src='templates/<?php echo $config['template'];?>/img/24/vlc.gif'> VLC media player</label></li>
                     <?php endif;?>
                 </ul>
                 <a class="minibutton" onclick="window.ui.saveVideoplayerSettings()"><span>Сохранить выбор</span></a>
