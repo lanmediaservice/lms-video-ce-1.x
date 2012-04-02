@@ -67,7 +67,7 @@ $config['optimize']['less_combine'] = 0;
  */
 $config['parser_service']['username'] = $config['customer']['login'];
 $config['parser_service']['password'] = $config['customer']['pass'];
-$config['parser_service']['url'] = $config['customer']['parser_service'];
+$config['parser_service']['url'] = isset($config['customer']['parser_service'])? $config['customer']['parser_service'] : 'http://service.lanmediaservice.com/2/actions.php';
 
 $config['http_client']['maxredirects'] = 5;
 $config['http_client']['timeout'] = 60;
