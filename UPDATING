@@ -64,7 +64,7 @@ $config['download']['players']['default'] = 'xspf';
     увеличены с 60 до 90 пикселей), необходимо перезакачать все персоналии.
     Для этого нужно выполнить в БД запрос:
 
-    UPDATE `persones` SET `LastUpdate`='0000-00-00 00:00:00' WHERE `OzonUrl`!='';
+    UPDATE `persones` SET `updated_at`='0000-00-00 00:00:00' WHERE `url`!='';
 
     Персоналии обновятся автоматически при выполнении скрипта batch-5m.sh/batch-5m.bat
 
