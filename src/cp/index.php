@@ -222,6 +222,11 @@ if (!getRights("admin_view", $user)){
 
         <link href="js/jquery-ui/css/smoothness/jquery-ui-1.8.16.custom.css" media="screen" rel="stylesheet" type="text/css" />
         <script language="JavaScript" src="js/jquery-ui/jquery-ui-1.8.16.custom.min.js"></script>
+        <?php
+        if (file_exists(__DIR__ . '/head.after.php')) {
+            include_once(__DIR__  . '/head.after.php');
+        }
+        ?>
     </head>
     <body>
         <div style="display:none" id="user_message"></div>
