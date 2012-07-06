@@ -994,9 +994,6 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
         try {
             $db = Lms_Db::get('main');
             $user = Lms_User::getUser();
-            if (!$user->isAllowed("user", "edit")) {
-                return new Lms_Api_Response(403, 'Forbidden');
-            }
 
             $oldPassword = md5($params['password_old']);
             if ($user->getPassword()!=md5($params['password_old'])) {
