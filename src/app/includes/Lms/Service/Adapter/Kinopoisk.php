@@ -26,14 +26,14 @@ class Lms_Service_Adapter_Kinopoisk
                      . "?kp_query=$query";
                 break;
             case 'film':
-                return "http://www.kinopoisk.ru/level/1/film/{$params['id']}/";
+                return "http://www.kinopoisk.ru/film/{$params['id']}/";
                 break;
         }
     }
 
     public static function getKinopoiskIdFromUrl($url)
     {
-        if (preg_match('{/level/1/film/(\d+)}', $url, $matches)) {
+        if (preg_match('{/film/(\d+)}', $url, $matches)) {
             return $matches[1];
         } else {
             throw new Lms_Exception("Invalid kinopoisk url: $url");
