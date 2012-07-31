@@ -42,10 +42,10 @@ class SiteParser_kinopoisk extends SiteParser{
                 }
                 break;
             case "film":
-                $res = $this->getStructByUrl($url, 'kinopoisk', $what);
+                $res = $this->getStructByUrl($url, 'kinopoisk', $what, array(), true);
             break;
             case "person":
-                $res = $this->getStructByUrl($url, 'kinopoisk', $what);
+                $res = $this->getStructByUrl($url, 'kinopoisk', $what, array(), true);
             break;
         } // switch
         return $res;
