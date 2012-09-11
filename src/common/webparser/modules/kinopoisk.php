@@ -14,7 +14,7 @@ class SiteParser_kinopoisk extends SiteParser{
     function constructPath($action,$params){
         switch($action){
             case 'search':
-                return "http://s.kinopoisk.ru/index.php?level=7&m_act[what]=item&from=forma&m_act[id]=0&m_act[find]=".urlencode($params['name']);
+                return "http://www.kinopoisk.ru/index.php?kp_query=".urlencode($params['name']);
                 break;
         } // switch
     }
