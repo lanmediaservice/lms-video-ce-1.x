@@ -247,6 +247,7 @@ class Lms_Ufs_Local
     
     public function filesize($fileUrl)
     {
+        static $cache = array();
         if (self::is_dir($fileUrl)) return 0;
         if ((PHP_INT_SIZE > 4) || @Lms_Ufs::$config['disable_4gb_support']) {//Для систем с битностью больше 32 размер файла больше 4 Гб определяется корректно
             return filesize(self::urlToPath($fileUrl));
@@ -265,10 +266,12 @@ class Lms_Ufs_Local
             $dir  = dirname($file);
             $list = array();
             if(function_exists('exec')) {
-                exec("ls -l ".escapeshellarg($dir) . '/', $list);
-                $files = self::_ParseUnixList($list, @Lms_Ufs::$config['ls_dateformat_in_iso8601']);
-                foreach ($files as $v){
-                    $cache[$dir."/".$v['name']] = $v['size'];
+                if (!isset($cache[$file])) {
+                    exec("ls -l ".escapeshellarg($dir) . '/', $list);
+                    $files = self::_ParseUnixList($list, @Lms_Ufs::$config['ls_dateformat_in_iso8601']);
+                    foreach ($files as $v){
+                        $cache[$dir."/".$v['name']] = $v['size'];
+                    }
                 }
                 $size = $cache[$file];
             } else {
@@ -283,7 +286,7 @@ class Lms_Ufs_Local
         $dirEntries = array();
         $countChunks = $iso8601? 7 : 8;
         foreach ($list as $line) {
-            if ($chunks = self::_SplitToChunks($line, $countChunks)) {
+            if (($chunks = self::_SplitToChunks($line, $countChunks)) && count($chunks)>=$countChunks) {
                 // fill dir entry
                 $dirEntry = array();
                 $dirEntry["is_dir"] = ($chunks[0]{0} == 'd');
