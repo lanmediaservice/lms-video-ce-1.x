@@ -51,7 +51,7 @@ class Lms_Item_FileTask extends Lms_Item_Abstract {
         } else {
             $targetDir = dirname($this->getTo());
             if (!Lms_Ufs::is_dir($targetDir)) {
-                Lms_Ufs::mkdir($this->getTo(), Lms_Application::getConfig('filesystem', 'permissions', 'directory'), true);
+                Lms_Ufs::mkdir($targetDir, Lms_Application::getConfig('filesystem', 'permissions', 'directory'), true);
             }
             if (Lms_Ufs::rename($this->getFrom(), $this->getTo())) {
                 $files = Lms_Item_File::selectByPath($this->getTo());
