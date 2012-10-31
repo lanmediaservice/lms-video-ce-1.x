@@ -69,6 +69,7 @@ $gd_loaded = function_exists('imagecreatefromgif');
     var USER_GROUP =  <?php echo $user['UserGroup']; ?>;
     var DEFAULT_FAVICON = "<?php echo $favicon; ?>";
     var SITE_URL = "<?php echo $config['siteurl']; ?>";
+    var TEMPLATE = "<?php echo $config['template']; ?>";
     var SITE_TITLE = "<?php echo isset($config['sitetitle']) ? $config['sitetitle'] : "Видео-каталог"; ?>";
 
     var FIXED_WIDTH_POSTER = <?php echo ($gd_loaded) ? 0 : (isset($config["covers"]["defaultcovers"]["width"]) ? $config["covers"]["defaultcovers"]["width"] : 160); ?>;

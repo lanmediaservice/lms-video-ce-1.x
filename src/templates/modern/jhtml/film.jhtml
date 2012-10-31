@@ -134,7 +134,7 @@
                                         {for frame in file.small_frames}
                                             {if frame_index<6}
                                                 <li>
-                                                    <a href="${file.frames[frame_index]}" rel="fancybox-frame-${file.file_id}" title="Кадр #${parseInt(frame_index)+1}"><img class="frame" data-original="${frame}"></a>
+                                                    <a href="${file.frames[frame_index]}" rel="fancybox-frame-${file.file_id}" title="Кадр #${parseInt(frame_index)+1}"><img class="frame" data-original="${frame}" src="templates/${TEMPLATE}/img/empty225px.png"></a>
                                                 </li>
                                             {/if}
                                         {/for}
