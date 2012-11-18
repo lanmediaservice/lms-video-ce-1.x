@@ -135,6 +135,7 @@ $config['incoming']['ignore_files'] = array('Thumbs.db', 'desktop.ini', '/^\./',
 $config['incoming']['cache_time'] = 600; //секунды
 $config['incoming']['hide_import'] = $config['Hide'];//добавлять скрытыми
 $config['incoming']['force_tasks'] = true;
+$config['incoming']['limit'] = 0;
 
 $config['metaparser']['ignore_files'] = array('Thumbs.db', 'desktop.ini', '/^\./', '/\.(zip|rar|txt|pdf)$/');
 $config['metaparser']['max_deep'] = 5;

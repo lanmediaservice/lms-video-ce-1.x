@@ -18,6 +18,10 @@ class Lms_Item_Incoming extends Lms_Item_Abstract_Serialized
         'info'
     ); 
     
+    private static $_incomingCache;
+    private static $_filesCache;
+    private static $_counter;
+    
     public function getTableName()
     {
         return '?_incoming';
@@ -226,13 +230,24 @@ class Lms_Item_Incoming extends Lms_Item_Abstract_Serialized
     public static function scanIncoming()
     {
         $db = Lms_Db::get('main');
-        $db->query('UPDATE ?_incoming SET `active`=0');
+        
+        self::$_incomingCache = $db->selectCol('SELECT MD5(CONCAT(`path`, ":", `size`, ":", `is_dir`)) AS ARRAY_KEY, incoming_id FROM ?_incoming WHERE `active`=1');
+        self::$_filesCache = $db->selectCol('SELECT MD5(`path`) AS ARRAY_KEY, file_id FROM ?_files');
+        self::$_counter = 0;
+//        Lms_Debug::debug(self::$_cache);
+        
+        $db->query('DELETE FROM ?_incoming WHERE `active`=0');
         
         $directories = Lms_Application::getConfig('rootdir');
         
         foreach ($directories as $directory) {
             self::scanDirectory($directory, Lms_Application::calcLevel($directory));
         }
+        
+        foreach (self::$_incomingCache as $incomingId) {
+            $db->query('UPDATE incoming SET `active`=0 WHERE incoming_id=?d', $incomingId);
+        }
+        
         $db->query('UPDATE incoming i INNER JOIN files USING(`path`) SET i.`active`=0');
         $db->query('UPDATE incoming INNER JOIN files_tasks ON(`path`=`from`) SET `active`=0');
         $items = self::select(null, null, true, $total);
@@ -242,9 +257,13 @@ class Lms_Item_Incoming extends Lms_Item_Abstract_Serialized
         }
         
    }
-
+    
     private static function scanDirectory($directory, $baseLevel)
     {
+        //Lms_Debug::debug("scan $directory $baseLevel");
+        if (Lms_Application::getConfig('incoming', 'limit') && self::$_counter >= Lms_Application::getConfig('incoming', 'limit')) {
+            return;
+        }
         $directory = Lms_Application::normalizePath($directory);
         $level = Lms_Application::calcLevel($directory) - $baseLevel;
         $db = Lms_Db::get('main');
@@ -265,48 +284,66 @@ class Lms_Item_Incoming extends Lms_Item_Abstract_Serialized
                             continue;
                         }
                         $path = $directory . "/" . $file;
-                        $isDir = Lms_Ufs::is_dir($path);
-                        $filename = $isDir? $file : pathinfo($file, PATHINFO_FILENAME);
-                        $name = self::extractName($filename);
-                        
-                        $data = array(
-                            'path' => $path,
-                            'sort' => $path . ($isDir? '/' : ''),
-                            'name' => $name,
-                            'last_query' => $name,
-                            'size' => !$isDir? Lms_Ufs::filesize($path) : null,
-                            'level' => $level,
-                            'is_dir' => $isDir? 1 : 0,
-                            'active' => 1,
-                        );
-                        if ($detectedQuality = self::extractQuality($filename)) {
-                            $quality = array();
-                            if ($isDir) {
-                                $quality['global'] = $detectedQuality;
-                            } else {
-                                $quality[0] = $detectedQuality;
-                            }
-                            $data['quality'] = serialize($quality);
+                        $isDir = Lms_Ufs::is_dir($path)? 1 : 0;
+                        $size = !$isDir? Lms_Ufs::filesize($path) : '0';
+                        $hash = md5("$path:$size:$isDir");
+                        $fileHash = md5($path);
+                        if (!empty(self::$_filesCache[$fileHash])) {
+                            //Lms_Debug::debug("file cache hit $path");
+                            continue;
                         }
-                        if ($detectedTranslation = self::extractTranslation($filename)) {
-                            $translation = array();
-                            if ($isDir) {
-                                $translation['global'] = array($detectedTranslation);
-                            } else {
-                                $translation[0] = array($detectedTranslation);
-                            }
-                            $data['translation'] = serialize($translation);
-                        }
+                        if (!isset(self::$_incomingCache[$hash])) {
+                            //Lms_Debug::debug("cache miss $path");
+                            $filename = $isDir? $file : pathinfo($file, PATHINFO_FILENAME);
+                            $name = self::extractName($filename);
 
-                        
-                        $update = $data;
-                        unset($update['quality']);
-                        unset($update['translation']);
-                        //unset($update['path']);
-                        //unset($update['sort']);
-                        unset($update['name']);
-                        unset($update['last_query']);
-                        $incomingFileId = $db->query('INSERT INTO incoming SET ?a ON DUPLICATE KEY UPDATE incoming_id=LAST_INSERT_ID(incoming_id), ?a', $data, $update);
+                            $data = array(
+                                'path' => $path,
+                                'sort' => $path . ($isDir? '/' : ''),
+                                'name' => $name,
+                                'last_query' => $name,
+                                'size' => $size? $size : 0,
+                                'level' => $level,
+                                'is_dir' => $isDir,
+                                'active' => 1,
+                            );
+                            if ($detectedQuality = self::extractQuality($filename)) {
+                                $quality = array();
+                                if ($isDir) {
+                                    $quality['global'] = $detectedQuality;
+                                } else {
+                                    $quality[0] = $detectedQuality;
+                                }
+                                $data['quality'] = serialize($quality);
+                            }
+                            if ($detectedTranslation = self::extractTranslation($filename)) {
+                                $translation = array();
+                                if ($isDir) {
+                                    $translation['global'] = array($detectedTranslation);
+                                } else {
+                                    $translation[0] = array($detectedTranslation);
+                                }
+                                $data['translation'] = serialize($translation);
+                            }
+
+
+                            $update = $data;
+                            unset($update['quality']);
+                            unset($update['translation']);
+                            //unset($update['path']);
+                            //unset($update['sort']);
+                            unset($update['name']);
+                            unset($update['last_query']);
+                            $incomingFileId = $db->query('INSERT INTO incoming SET ?a ON DUPLICATE KEY UPDATE incoming_id=LAST_INSERT_ID(incoming_id), ?a', $data, $update);
+                        } else {
+                            $incomingFileId = self::$_incomingCache[$hash];
+                            //Lms_Debug::debug("cache hit $incomingFileId");
+                            unset(self::$_incomingCache[$hash]);
+                        }
+                        self::$_counter++;
+                        if (Lms_Application::getConfig('incoming', 'limit') && self::$_counter >= Lms_Application::getConfig('incoming', 'limit')) {
+                            break;
+                        }
                         if ($isDir && $db->selectCell('SELECT count(*) FROM incoming WHERE `expanded` AND `active` AND NOT `hidden` AND incoming_id=?d', $incomingFileId)) {
                             self::scanDirectory($path, $baseLevel);
                         }
