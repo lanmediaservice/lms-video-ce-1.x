@@ -14,7 +14,7 @@ class SiteParser_imdb extends SiteParser{
     function constructPath($action,$params){
         switch($action){
             case 'search':
-                return "/find?q=".rawurlencode($params['name']).";s=tt";
+                return "/find?q=".rawurlencode($params['name'])."&s=tt";
                 break;
         } // switch
     }
