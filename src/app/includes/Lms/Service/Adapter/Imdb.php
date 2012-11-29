@@ -237,7 +237,7 @@ class Lms_Service_Adapter_Imdb
             case 'search':
                 $query = Lms_Text::translit($params['query']);
                 $query = urlencode($query);
-                return "http://www.imdb.com/find?q=$query;s=tt";
+                return "http://www.imdb.com/find?q=$query&s=tt";
                 break;
             case 'film':
                 return "http://www.imdb.com/title/tt" . sprintf('%07d', $params['id']) . "/";
