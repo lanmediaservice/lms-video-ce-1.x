@@ -36,7 +36,7 @@
                 <a href="#/movie/id/${movie.movie_id}">
                     ${movie.name}
                 </a>
-                {if movie.hide}(скрыт){/if}
+                {if movie.hidden}(скрыт){/if}
                 {if movie.popular}<span class="popular">хит!</span>{/if}
                 {if USER_GROUP!=0}<div {if window.ui.bookmarkExists(movie.movie_id)} class="bookmark on" title="Удалить закладку" {else} class="bookmark" title="Добавить в закладки" {/if} mid="${movie.movie_id}" onclick="window.ui.toogleBookmark(${movie.movie_id})"></div>{/if}
             </div>
