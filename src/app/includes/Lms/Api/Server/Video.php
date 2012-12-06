@@ -818,7 +818,7 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                      . "    `international_name`, " 
                      . "    year, "
                      . "    `covers` "
-                     . "FROM `movies` f "
+                     . "FROM `movies` m "
                      . implode(' ', $joins) . " "
                      . "WHERE " . implode(' AND ', $wheres) . " "
                      . "ORDER BY rank DESC LIMIT ?d";
