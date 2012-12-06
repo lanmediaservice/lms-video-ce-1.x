@@ -862,7 +862,6 @@ class Lms_Api_Server_Video extends Lms_Api_Server_Abstract
                 $sql = "SELECT person_id , "
                      . "    `name`, " 
                      . "    `international_name`, " 
-                     . "    `description`, " 
                      . "    `photos` "
                      . "FROM persones p "
                      . implode(' ', $joins) . " "
