@@ -14,7 +14,8 @@ class SiteParser_kinopoisk extends SiteParser{
     function constructPath($action,$params){
         switch($action){
             case 'search':
-                return "http://www.kinopoisk.ru/index.php?kp_query=".urlencode($params['name']);
+                $query = urlencode(mb_convert_encoding($params['name'], 'UTF-8', 'CP1251'));
+                return "http://www.kinopoisk.ru/search/?text=$query";
                 break;
         } // switch
     }
@@ -25,7 +26,7 @@ class SiteParser_kinopoisk extends SiteParser{
         $url = $this->absUrl($path, $dirPath);
         switch($what){
             case "search_results":
-                $currentResult = $this->getStructByUrl($url, 'kinopoisk', $what, array('film'));
+                $currentResult = $this->getStructByUrl($url, 'kinopoisk', $what, array('film'), true);
                 if (isset($currentResult['attaches']['film'])) {
                     $film = $currentResult['attaches']['film'];
                     $url = $currentResult['suburls']['film'][2];
@@ -42,6 +43,7 @@ class SiteParser_kinopoisk extends SiteParser{
                 }
                 break;
             case "film":
+                $url .= 'details/cast/';
                 $res = $this->getStructByUrl($url, 'kinopoisk', $what, array(), true);
             break;
             case "person":

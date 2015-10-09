@@ -144,8 +144,31 @@ class SiteParser {
         if ($result['success']) {
             $res = $result['response'];
         } elseif (in_array($result['response'], array(404,500))) {
+            if ($module=='kinopoisk') {
+                $url = $url . ((strpos($url, "?")===FALSE)? '?' : '&');
+                $url .= 'nocookiesupport=yes';
+            }
             $httpClient = $this->getHttpRetriever($url);
             $response = $httpClient->get($url, $followRidrects, '', true, true);
+            
+            if ($module=='kinopoisk') {
+                require_once __DIR__ . '/../../app/libs/tplib/Zend/Exception.php';
+                require_once __DIR__ . '/../../app/libs/tplib/Zend/Http/Exception.php';
+                require_once __DIR__ . '/../../app/libs/tplib/Zend/Http/Response.php';
+                $responseObject = Zend_Http_Response::fromString($response);
+                $redirectUrl = null;
+                if ($responseObject->isRedirect()) {
+                    $redirectUrl = $responseObject->getHeader('Location');
+                } else {
+                    $body = $responseObject->getBody();
+                    if (preg_match('{<meta http-equiv="Refresh"[^>]*url=(.*?)">}is', $body, $matches)) {
+                        $redirectUrl = html_entity_decode($matches[1]);
+                    }
+                }
+                if ($redirectUrl) {
+                    $response = $httpClient->get($redirectUrl, $followRidrects, '', true, true);
+                }
+            }
             $request['action'] = 'parseResponse';
             $request['response'] = $response;
             $result = $this->execServiceAction($request);
