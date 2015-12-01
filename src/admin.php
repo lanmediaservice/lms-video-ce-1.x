@@ -1110,7 +1110,7 @@ if (isset($config['mysql_set_names'])) mysql_query($config['mysql_set_names']);
                     outstr = "<div style='float:left;color:#1845AD;font-weight:bold;'>G<span style='color:red'>o</span><span style='color:#C69E00'>o</span>g<span style='color:green'>l</span><span style='color:red'>e</span> Images Search</div> <div style='text-align:right;'> <a href='javascript:Hide(\"filmpostersearch\")'>Закрыть</a></div>";
                     outstr += "<div style='margin-bottom:10px;'><input id='AdvFilmImgSearchText' type='text' size='70' onKeyPress='if (event.keyCode==13) AdvFilmImgSearchGo("+id+");'> <a style='border:1px solid black;' href='javascript:AdvFilmImgSearchGo("+id+")'>Искать!</a></div>";
                     for (var i=0; givariant = founds[i];i++){
-                        outstr += "<div style='float:left;width:140px;height:170px;'><a href='" + givariant.coverurl + "' target='_blank'><img src='" + givariant.imgsmall + "'></a><br>" + givariant.w + "x" + givariant.h + " <a href='javascript:addValue(\"FilmPosters\",\"" + givariant.coverurl + "\",\"Poster\","+id+")'>Добавить</a></div>";
+                        outstr += "<div style='float:left;width:140px;height:170px;'><a href='" + givariant.coverurl + "' target='_blank'><img src='" + givariant.imgsmall + "' style='max-width: 140px; max-height: 150px;'></a><br>" + givariant.w + "x" + givariant.h + " <a href='javascript:addValue(\"FilmPosters\",\"" + givariant.coverurl + "\",\"Poster\","+id+")'>Добавить</a></div>";
                     }
                     document.getElementById("filmpostersearch").innerHTML = outstr;
                     document.getElementById("filmpostersearch").style.display = "";

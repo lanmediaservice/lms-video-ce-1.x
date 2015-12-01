@@ -523,16 +523,23 @@ function googleSearch($title)
 {
 	$googleServer = "http://images.google.com";
 
-	$resp = httpClient($googleServer . '/images?q=' . urlencode($title) . '&hl=ru&imgsz=small|medium|large|xlarge', 1);
+	$resp = httpClient($googleServer . '/search?q=' . urlencode($title) . '&safe=off&tbm=isch&ijn=1&start=0&csl=1', 1);
 	$result = array();
-	if (preg_match_all('{<a href="/imgres\?imgurl=(.*?)&amp;.*?&amp;h=(\d+)&amp;w=(\d+).*?<img[^>]*src=(.*?)[\s>]}i', $resp['data'], $data, PREG_SET_ORDER)) {
+        if (preg_match_all('{<a[^>]*?href="(?:http://images\.google\.com)?/imgres\?([^"]*?)"[^>]*?><img[^>]*?src=(.*?)[\s>]}i', $resp['data'], $data, PREG_SET_ORDER)) {
 		foreach ($data as $row) {
+                        $row[1] = html_entity_decode($row[1]);
+                        parse_str($row[1], $vars);
 			$info = array();
-			$url = rawurldecode($row[1]);
-			$info['coverurl'] = (preg_match('/^http/', $url) ? "" : "http://") . $url; // resulting target url
-			$info['imgsmall'] = trim($row[4],'"\''); // small thumbnail url
-			$info['w'] = $row[3]; // width
-			$info['h'] = $row[2]; //height
+                        if (preg_match('{imgurl=([^&"]+)}i', $row[1], $matches)) {
+                            $url = $matches[1];
+                            $url = str_ireplace(array("%3F", "%3D", "%26"), array("?", "=", "&"), $url);
+                        } else {
+                            $url = $vars['imgurl'];
+                        }
+			$info['coverurl'] = $url;
+			$info['imgsmall'] = trim($row[2],'"\'');
+			$info['w'] = $vars['w']; // width
+			$info['h'] = $vars['h']; //height
 			$result[] = $info;
 		}
 	}
