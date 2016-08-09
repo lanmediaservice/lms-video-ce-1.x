@@ -124,7 +124,7 @@ function searchPersonOzon($name, $first=true){
 }
 
 function parseFilm($url){
-	preg_match("/^(http:\/\/)?([^:\/]+)/i", $url, $matches);
+	preg_match("/^(https?:\/\/)?([^:\/]+)/i", $url, $matches);
 	$host = $matches[2];
 	preg_match("/[^\.\/]+\.[^\.\/]+$/",$host,$matches);
 	$where = $matches[0];

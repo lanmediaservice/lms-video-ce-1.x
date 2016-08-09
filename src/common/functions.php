@@ -28,9 +28,11 @@ function get_cookies_from_response($response, $oldcookies = null)
 	return $oldcookies;
 }
 
-function gzdecode(&$string)
-{
-	return gzinflate(substr($string, 10));
+if (!function_exists('gzdecode')) {
+    function gzdecode(&$string)
+    {
+    	return gzinflate(substr($string, 10));
+    }
 }
 
 function httpClient($url, $cache = 0, $post = '', $timeout = 15, $cookies = null, $headers2 = '', $omitProxy = false, $omitRedirect = false)

@@ -77,7 +77,7 @@ class SiteParser {
     
         if ($encode){
             $start = 0;    
-            if (substr($path,0,7)=='http://') $start = 3;
+            if (substr($path,0,7)=='http://' || substr($path,0,8)=='https://') $start = 3;
             $t = explode("/",$path);
             for ($i=$start;$i<count($t);$i++) $t[$i] = rawurlencode ($t[$i]);
             $path = implode("/",$t);
@@ -86,11 +86,11 @@ class SiteParser {
         
         if ($path{0}=='/')
             return 'http://' . $this->host . $path;
-        elseif (substr($path,0,7)=='http://')
+        elseif (substr($path,0,7)=='http://' || substr($path,0,8)=='https://')
             return $path;
         elseif($parentpath{0}=='/')
             return 'http://' . $this->host . $parentpath . $path;
-        elseif (substr($parentpath,0,7)=='http://')
+        elseif (substr($parentpath,0,7)=='http://' || substr($parentpath,0,8)=='https://')
             return $parentpath . $path;
     }
 
@@ -101,6 +101,11 @@ class SiteParser {
 
     }
 
+    function getZendHttpRetriever($path){
+        require_once dirname(dirname(dirname(__FILE__))) . "/app/config.php";
+        return new Zend_Http_Client();
+    }
+    
     function getHttpRetriever($path){
         //Including depends
         if (!class_exists("http")) {
@@ -144,33 +149,22 @@ class SiteParser {
         if ($result['success']) {
             $res = $result['response'];
         } elseif (in_array($result['response'], array(404,500))) {
-            if ($module=='kinopoisk') {
-                $url = $url . ((strpos($url, "?")===FALSE)? '?' : '&');
-                $url .= 'nocookiesupport=yes';
-            }
-            $httpClient = $this->getHttpRetriever($url);
-            $response = $httpClient->get($url, $followRidrects, '', true, true);
+            $httpClient = $this->getZendHttpRetriever($url);
+            $httpClient->setConfig(array(
+                'maxredirects' => $followRidrects? 5 : 0
+            ));
+            $responseObject = $httpClient->resetParameters()
+                                         ->setUri($url)
+                                         ->setMethod(Zend_Http_Client::GET)
+                                         ->setHeaders('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+                                         ->setHeaders('Accept-Language', 'ru,en-us;q=0.7,en;q=0.3')
+                                         ->setHeaders('Accept-Encoding', 'gzip, deflate')
+                                         ->setHeaders('Accept-Charset', 'windows-1251,utf-8;q=0.7,*;q=0.7')
+                                         ->setHeaders('Referer', dirname($url))
+                                         ->request();
             
-            if ($module=='kinopoisk') {
-                require_once __DIR__ . '/../../app/libs/tplib/Zend/Exception.php';
-                require_once __DIR__ . '/../../app/libs/tplib/Zend/Http/Exception.php';
-                require_once __DIR__ . '/../../app/libs/tplib/Zend/Http/Response.php';
-                $responseObject = Zend_Http_Response::fromString($response);
-                $redirectUrl = null;
-                if ($responseObject->isRedirect()) {
-                    $redirectUrl = $responseObject->getHeader('Location');
-                } else {
-                    $body = $responseObject->getBody();
-                    if (preg_match('{<meta http-equiv="Refresh"[^>]*url=(.*?)">}is', $body, $matches)) {
-                        $redirectUrl = html_entity_decode($matches[1]);
-                    }
-                }
-                if ($redirectUrl) {
-                    $response = $httpClient->get($redirectUrl, $followRidrects, '', true, true);
-                }
-            }
             $request['action'] = 'parseResponse';
-            $request['response'] = $response;
+            $request['response'] = $responseObject->asString();;
             $result = $this->execServiceAction($request);
             if ($result['success']) {
                 $res = $result['response'];
